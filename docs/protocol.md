@@ -35,7 +35,7 @@ only when it is malformed (`422`) or the request is unauthenticated (`401`).
 | `kind` | `"rows"` \| `"count"` | `rows` | `count` ignores `fields`, `sort`, `page`, `include` |
 | `fields` | string[] | all readable columns | Column ids; the key is always returned. Filter/sort columns and columns marked `always()` are read for the query but not returned unless listed |
 | `filters` | Filter[] | `[]` | Combined with AND; at most `limits.filters` |
-| `sort` | Sort[] | `[]` | At most `limits.sort`; the primary key is always appended as tie-breaker |
+| `sort` | Sort[] | `[]` | At most `limits.sort`; empty → the source's default order, if it declares one; the primary key is always appended as tie-breaker |
 | `page` | `{ number, size }` | `{ 1, limits.page_size.default }` | 1-based; `size ≤ limits.page_size.max` |
 | `search` | string | — | Free text over the source's searchable columns |
 | `include` | map | — | Laraql extension, see below |
@@ -98,6 +98,14 @@ Blank search is ignored. More than `limits.search_tokens` tokens is `422`
 { "column": "due_date", "dir": "desc" }
 ```
 
+### Visibility
+
+A source may show a column to some users only
+(`Column::visibleWhen(fn (Context $c) => …)`). To anyone else the column does
+not exist: naming it in `fields`, `filters`, `sort` or an `include` is `422`
+(unknown column), it is absent when `fields` is omitted, and search skips it.
+Access to the source as a whole is still `authorize()`.
+
 ### Result
 
 | Field | Present when | Shape |
@@ -138,7 +146,7 @@ kinds, so a client can say what it does:
 | Kind | Effect | Example |
 |---|---|---|
 | `Option::scope(fn)` | narrows the row set in the sub-query | `only_orderable` → `where('type', …)` |
-| `Option::load(relation)` | eager-loads a relation for the page of rows | `with_photo` |
+| `Option::load(relation)` | eager-loads a relation for the page of rows; the `with()` array form adds constraints. The model's own `$with` is never applied | `with_photo`, `['lines' => fn ($q) => …]` |
 | `Option::decorate(fn)` | adds computed keys to each row | `allowed_units` → `{ "allowed_units": [...] }` |
 
 Unknown names are `422` (`options.N`). Options are the replacement for ad-hoc

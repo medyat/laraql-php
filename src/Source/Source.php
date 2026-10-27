@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Medyat\Laraql\Source;
 
 use Closure;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use LogicException;
 use Medyat\Laraql\Column\Column;
+use Medyat\Laraql\Context;
 use Medyat\Laraql\Input;
 
 /**
@@ -31,7 +31,12 @@ abstract class Source
     /** @return class-string<Model> */
     abstract public function model(): string;
 
-    /** @return list<Column> */
+    /**
+     * Built once per process and cached: never read request state here. Use
+     * `Column::visibleWhen()` for per-user visibility.
+     *
+     * @return list<Column>
+     */
     abstract public function columns(): array;
 
     /** One or two sentences for clients and agents: what a row is and when to query this source. */
@@ -65,6 +70,18 @@ abstract class Source
     }
 
     /**
+     * Order applied when the query sends no `sort`, column id → direction;
+     * the key still breaks ties. Includes without `sort` use the related
+     * source's default.
+     *
+     * @return array<string, 'asc'|'desc'>
+     */
+    public function defaultSort(): array
+    {
+        return [];
+    }
+
+    /**
      * Joins columns may read through, keyed by the table alias used in `from()`:
      * `['companies' => ['companies.id', '=', 'orders.company_id']]` or a closure
      * receiving the sub-query (and free to capture `$input`). Applied only when
@@ -73,6 +90,17 @@ abstract class Source
      * @return array<string, array{string, string, string}|Closure(Builder<Model>): void>
      */
     public function joins(Input $input): array
+    {
+        return [];
+    }
+
+    /**
+     * Keys of `joins()` applied to every query, for joins `scope()` relies on.
+     * A column using the same key does not join it twice.
+     *
+     * @return list<string>
+     */
+    public function alwaysJoin(): array
     {
         return [];
     }
@@ -95,7 +123,7 @@ abstract class Source
     }
 
     /** Default: the model's policy `viewAny`, or allowed when there is no policy. */
-    public function authorize(?Authenticatable $user): bool
+    public function authorize(Context $context): bool
     {
         $model = $this->model();
 
@@ -103,7 +131,7 @@ abstract class Source
             return true;
         }
 
-        return Gate::forUser($user)->allows('viewAny', $model);
+        return Gate::forUser($context->user)->allows('viewAny', $model);
     }
 
     public function newModel(): Model
@@ -164,9 +192,13 @@ abstract class Source
         return $this->columnMap()[$this->key()];
     }
 
-    /** @return list<Column> */
-    public function searchableColumns(): array
+    /**
+     * Searchable columns the request's user may see.
+     *
+     * @return list<Column>
+     */
+    public function searchableColumns(Context $context): array
     {
-        return array_values(array_filter($this->columnMap(), fn (Column $column): bool => $column->searchable));
+        return array_values(array_filter($this->columnMap(), fn (Column $column): bool => $column->searchable && $column->visible($context)));
     }
 }

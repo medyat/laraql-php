@@ -1,0 +1,122 @@
+{
+  "name": "visibility-hidden-column",
+  "description": "note is visible to admin only (Column::visibleWhen). To ayse the column does not exist: naming it in fields, filters or sort is 422 unknown column, and it is absent when fields is omitted.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul",
+    "user": "ayse"
+  },
+  "request": {
+    "queries": {
+      "in_fields": {
+        "source": "order",
+        "fields": [
+          "code",
+          "note"
+        ]
+      },
+      "in_filter": {
+        "source": "order",
+        "fields": [
+          "code"
+        ],
+        "filters": [
+          {
+            "column": "note",
+            "op": "is_not_empty"
+          }
+        ]
+      },
+      "in_sort": {
+        "source": "order",
+        "fields": [
+          "code"
+        ],
+        "sort": [
+          {
+            "column": "note",
+            "dir": "asc"
+          }
+        ]
+      },
+      "all_fields": {
+        "source": "order",
+        "filters": [
+          {
+            "column": "code",
+            "op": "eq",
+            "value": "SO-1001"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "in_fields": {
+          "error": {
+            "status": 422,
+            "code": "invalid_query",
+            "message": "The query is invalid.",
+            "details": {
+              "fields.1": [
+                "Unknown column \"note\" on source \"order\"."
+              ]
+            }
+          }
+        },
+        "in_filter": {
+          "error": {
+            "status": 422,
+            "code": "invalid_query",
+            "message": "The query is invalid.",
+            "details": {
+              "filters.0.column": [
+                "Unknown column \"note\" on source \"order\"."
+              ]
+            }
+          }
+        },
+        "in_sort": {
+          "error": {
+            "status": 422,
+            "code": "invalid_query",
+            "message": "The query is invalid.",
+            "details": {
+              "sort.0.column": [
+                "Unknown column \"note\" on source \"order\"."
+              ]
+            }
+          }
+        },
+        "all_fields": {
+          "rows": [
+            {
+              "id": 1,
+              "code": "SO-1001",
+              "customer": "Ege Tarim Makine",
+              "status": "released",
+              "gross_total": 1250.0,
+              "due_date": "2026-10-01",
+              "created_at": "2026-09-20T08:00:00Z",
+              "tags": [
+                "export",
+                "vip"
+              ],
+              "owner_id": 3,
+              "lines_count": 3,
+              "lines_qty": 13
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

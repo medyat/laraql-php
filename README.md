@@ -98,6 +98,8 @@ then query `POST /laraql`:
 multiply parent rows; use `relations()` + `include` for those). The key is the
 joined table's name; to alias a table or join it twice, use the closure form:
 `'c' => fn ($q) => $q->leftJoin('companies as c', 'c.id', '=', 'orders.company_id')`.
+A join `scope()` relies on (a visibility flag on the joined table) goes in
+`alwaysJoin()` (`['companies']`): it is applied to every query, once.
 
 Hooks (`scope`, `joins`, decorators, option closures) receive an `Input`: the
 user, the requested field ids and the validated `params`. Declare params in
@@ -108,6 +110,15 @@ rows is what filters are for.
 A column a decorator reads but the client may leave out of `fields` (an
 ability flag computed from `status`) is marked `->always()`: it is selected
 for every rows query and returned only when requested.
+
+A column some users must not see (prices for users without `show_price`) is
+marked `->visibleWhen(fn (Context $c) => …)`: to the others it does not exist
+(422 when named, absent from omitted `fields`, skipped by search). The
+predicate runs per request; `columns()` itself is built once per process and
+must not read request state.
+
+`defaultSort()` (`['position' => 'asc']`) orders queries that send no `sort`;
+the primary key still breaks ties.
 
 Laraql runs on SQLite, MySQL and PostgreSQL (CI replays every fixture on all
 three) and supports integer and string/UUID primary keys.

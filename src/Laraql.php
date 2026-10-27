@@ -58,7 +58,7 @@ final readonly class Laraql
 
         $source = $this->registry->get($name);
 
-        if (! $source->authorize($context->user)) {
+        if (! $source->authorize($context)) {
             throw new ForbiddenException;
         }
 

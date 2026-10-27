@@ -13,6 +13,9 @@ class Order extends Model
 
     protected $guarded = [];
 
+    /** An app model that eager-loads by default; laraql must not pay for it (eager loads come only from load options). */
+    protected $with = ['lines'];
+
     public function lines(): HasMany
     {
         return $this->hasMany(OrderLine::class)->orderBy('position');

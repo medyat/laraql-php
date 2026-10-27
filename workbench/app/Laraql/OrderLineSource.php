@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Workbench\App\Laraql;
 
+use Illuminate\Database\Eloquent\Builder;
 use Medyat\Laraql\Column\Column;
 use Medyat\Laraql\Input;
 use Medyat\Laraql\Source\Source;
@@ -34,8 +35,25 @@ final class OrderLineSource extends Source
         ];
     }
 
+    public function defaultSort(): array
+    {
+        return ['position' => 'asc'];
+    }
+
     public function joins(Input $input): array
     {
         return ['orders' => ['orders.id', '=', 'order_lines.order_id']];
+    }
+
+    /** scope() filters on orders.code, so the join must be there even when no order.* column is used. */
+    public function alwaysJoin(): array
+    {
+        return ['orders'];
+    }
+
+    /** Lines whose order is gone are hidden (result-neutral on the dataset). */
+    public function scope(Builder $query, Input $input): void
+    {
+        $query->whereNotNull('orders.code');
     }
 }

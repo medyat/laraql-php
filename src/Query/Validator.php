@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Medyat\Laraql\Query;
 
+use LogicException;
 use Medyat\Laraql\Column\Column;
 use Medyat\Laraql\Column\Type;
 use Medyat\Laraql\Context;
@@ -93,7 +94,7 @@ final class Validator
         $fields = [];
 
         foreach ($raw as $i => $id) {
-            $column = is_string($id) ? $source->column($id) : null;
+            $column = $this->column($id, $source);
 
             if ($column === null) {
                 $errors->add("{$path}.{$i}", 'unknown_column', ['column' => is_scalar($id) ? (string) $id : '?', 'source' => $source->name()]);
@@ -148,7 +149,7 @@ final class Validator
         $this->unknownKeys($raw, ['column', 'op', 'value', 'currency'], $path.'.', $errors);
 
         $id = $raw['column'] ?? null;
-        $column = is_string($id) ? $source->column($id) : null;
+        $column = $this->column($id, $source);
 
         if ($column === null) {
             $errors->add("{$path}.column", 'unknown_column', ['column' => is_scalar($id) ? (string) $id : '?', 'source' => $source->name()]);
@@ -276,7 +277,7 @@ final class Validator
             $this->unknownKeys($item, ['column', 'dir'], "{$path}.{$i}.", $errors);
 
             $id = $item['column'] ?? null;
-            $column = is_string($id) ? $source->column($id) : null;
+            $column = $this->column($id, $source);
 
             if ($column === null) {
                 $errors->add("{$path}.{$i}.column", 'unknown_column', ['column' => is_scalar($id) ? (string) $id : '?', 'source' => $source->name()]);
@@ -298,6 +299,23 @@ final class Validator
                 continue;
             }
 
+            $sorts[] = new Sort($column, $dir);
+        }
+
+        return $sorts === [] ? $this->defaultSort($source) : $sorts;
+    }
+
+    /**
+     * The source's own order for queries without `sort`.
+     *
+     * @return list<Sort>
+     */
+    private function defaultSort(Source $source): array
+    {
+        $sorts = [];
+
+        foreach ($source->defaultSort() as $id => $dir) {
+            $column = $source->column($id) ?? throw new LogicException("Source [{$source->name()}] default sort uses undeclared column [{$id}].");
             $sorts[] = new Sort($column, $dir);
         }
 
@@ -356,7 +374,7 @@ final class Validator
             return [];
         }
 
-        if ($source->searchableColumns() === []) {
+        if ($source->searchableColumns($this->context) === []) {
             $errors->add('search', 'search_not_supported', ['source' => $source->name()]);
 
             return [];
@@ -506,6 +524,14 @@ final class Validator
         }
 
         return $params;
+    }
+
+    /** The column behind an id as this request's user sees it; hidden columns are unknown to them. */
+    private function column(mixed $id, Source $source): ?Column
+    {
+        $column = is_string($id) ? $source->column($id) : null;
+
+        return $column !== null && $column->visible($this->context) ? $column : null;
     }
 
     private function limit(string $key): int

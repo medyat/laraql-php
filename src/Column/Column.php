@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Medyat\Laraql\Column;
 
+use Closure;
 use LogicException;
+use Medyat\Laraql\Context;
 
 /**
  * A typed, whitelisted column of a source. `id` is what clients see; `from`
@@ -28,6 +30,9 @@ final class Column
 
     /** Read on every rows query even when `fields` leaves it out; returned only when requested. */
     public private(set) bool $always = false;
+
+    /** @var Closure(Context): bool|null */
+    private ?Closure $visibleWhen = null;
 
     public private(set) ?string $currency = null;
 
@@ -205,6 +210,25 @@ final class Column
         $this->always = true;
 
         return $this;
+    }
+
+    /**
+     * Show the column only when the predicate holds for the request; to other
+     * users it does not exist (422 when named, absent from omitted `fields`,
+     * skipped by search). Runs per request, so `columns()` stays static.
+     *
+     * @param  Closure(Context): bool  $when
+     */
+    public function visibleWhen(Closure $when): self
+    {
+        $this->visibleWhen = $when;
+
+        return $this;
+    }
+
+    public function visible(Context $context): bool
+    {
+        return $this->visibleWhen === null || ($this->visibleWhen)($context);
     }
 
     public function notFilterable(): self

@@ -1,0 +1,70 @@
+{
+  "name": "sort-default",
+  "description": "A source may declare a default order (order_line: position asc) used when the query sends no sort; the primary key still breaks ties. Includes without sort use the related source's default too.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order_line",
+        "fields": [
+          "product_code",
+          "position"
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 1,
+              "product_code": "HC-80",
+              "position": 1
+            },
+            {
+              "id": 4,
+              "product_code": "SK-80",
+              "position": 1
+            },
+            {
+              "id": 5,
+              "product_code": "TP-120",
+              "position": 1
+            },
+            {
+              "id": 7,
+              "product_code": "TC-3",
+              "position": 1
+            },
+            {
+              "id": 2,
+              "product_code": "SK-80",
+              "position": 2
+            },
+            {
+              "id": 6,
+              "product_code": "HC-80",
+              "position": 2
+            },
+            {
+              "id": 3,
+              "product_code": "GP-25",
+              "position": 3
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

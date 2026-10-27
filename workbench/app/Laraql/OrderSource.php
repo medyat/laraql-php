@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace Workbench\App\Laraql;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Medyat\Laraql\Column\Column;
+use Medyat\Laraql\Context;
 use Medyat\Laraql\Input;
 use Medyat\Laraql\Source\Option;
 use Medyat\Laraql\Source\Relation;
 use Medyat\Laraql\Source\Source;
 use Workbench\App\Models\Order;
 use Workbench\App\Models\OrderLine;
+use Workbench\App\Models\User;
 
 /** Mirrors fixtures/v1/dataset.json · sources.order */
 final class OrderSource extends Source
@@ -41,7 +44,9 @@ final class OrderSource extends Source
             Column::money('gross_total', 'TRY')->describe('Total including VAT.'),
             Column::date('due_date')->describe('Promised delivery date; empty when not agreed yet.'),
             Column::datetime('created_at'),
-            Column::text('note'),
+            Column::text('note')
+                ->visibleWhen(fn (Context $context): bool => $context->user instanceof User && $context->user->name === 'admin')
+                ->describe('Internal note, staff (admin) only.'),
             Column::tags('tags')->describe('Free labels such as export, vip, rush.'),
             Column::user('owner_id')->describe('Owner user id; "@me" resolves to the current user.'),
             Column::int('lines_count')
@@ -80,6 +85,7 @@ final class OrderSource extends Source
         return [
             'only_done' => Option::scope(fn (Builder $query) => $query->where('status', 'done'), 'Only orders whose status is done.'),
             'with_lines' => Option::load('lines', 'Eager-loads the lines so decorators can read them without extra queries.'),
+            'with_bulk_lines' => Option::load(['lines' => fn (HasMany $lines) => $lines->where('qty', '>=', 2)], 'Eager-loads only the lines with qty >= 2 (a constrained load); product_codes then lists those.'),
             'product_codes' => Option::decorate(
                 fn (Order $order, array $row): array => $row + ['product_codes' => $order->lines->pluck('product_code')->all()],
                 'Adds product_codes: the product codes on the order, in position order.',

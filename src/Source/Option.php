@@ -11,8 +11,9 @@ use Medyat\Laraql\Input;
 
 /**
  * A named, server-side behaviour a source declares; clients send its name in
- * `options`. Three kinds: narrow the row set, eager-load a relation, add keys
- * to each row. Closures receive the query Input after their usual arguments.
+ * `options`. Three kinds: narrow the row set, eager-load a relation (plain
+ * name or the `with()` array form with constraints), add keys to each row.
+ * Closures receive the query Input after their usual arguments.
  */
 final readonly class Option
 {
@@ -24,13 +25,14 @@ final readonly class Option
 
     /**
      * @param  Closure(Builder<Model>, Input): void|null  $scope
+     * @param  string|array<array-key, string|Closure>|null  $relation
      * @param  Closure(Model, array<string, mixed>, Input): array<string, mixed>|null  $decorator
      */
     private function __construct(
         public string $kind,
         public ?string $description = null,
         public ?Closure $scope = null,
-        public ?string $relation = null,
+        public string|array|null $relation = null,
         public ?Closure $decorator = null,
     ) {}
 
@@ -40,7 +42,8 @@ final readonly class Option
         return new self(self::SCOPE, $description, scope: $scope);
     }
 
-    public static function load(string $relation, ?string $description = null): self
+    /** @param  string|array<array-key, string|Closure>  $relation  A relation name, or the `with()` array form: `['lines' => fn ($q) => $q->where(…)]`. */
+    public static function load(string|array $relation, ?string $description = null): self
     {
         return new self(self::LOAD, $description, relation: $relation);
     }

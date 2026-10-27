@@ -35,7 +35,8 @@
           "type": "datetime"
         },
         "note": {
-          "type": "text"
+          "type": "text",
+          "visible_when": "admin"
         },
         "tags": {
           "type": "tags"
@@ -71,6 +72,7 @@
       "options": [
         "only_done",
         "with_lines",
+        "with_bulk_lines",
         "product_codes",
         "with_ability"
       ]
@@ -102,6 +104,9 @@
         }
       },
       "relations": {},
+      "default_sort": {
+        "position": "asc"
+      },
       "options": []
     },
     "warehouse": {

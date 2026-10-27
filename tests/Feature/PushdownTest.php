@@ -58,3 +58,29 @@ it('runs one extra query for a load option, not one per row', function (): void 
 
     expect(DB::getQueryLog())->toHaveCount(2); // rows + eager-loaded lines
 });
+
+it('ignores the model\'s own $with: eager loads come only from load options', function (): void {
+    $this->seed(DatabaseSeeder::class);
+    DB::enableQueryLog();
+
+    $this->actingAs(new User(['name' => 'admin']))->postJson('/laraql', ['queries' => ['q' => [
+        'source' => 'order',
+        'fields' => ['code'],
+    ]]])->assertOk()->assertJsonCount(6, 'results.q.rows');
+
+    expect(DB::getQueryLog())->toHaveCount(1); // Order::$with = ['lines'] must not add a query
+});
+
+it('applies alwaysJoin() joins before any column asks for them, and never twice', function (): void {
+    $admin = new User(['name' => 'admin']);
+
+    DB::enableQueryLog();
+    $this->actingAs($admin)->postJson('/laraql', ['queries' => ['q' => ['source' => 'order_line', 'fields' => ['product_code']]]])->assertOk();
+    $sql = collect(DB::getQueryLog())->pluck('query')->last();
+    expect(substr_count((string) $sql, 'left join "orders"'))->toBe(1); // no order.* column, join still there for scope()
+
+    DB::flushQueryLog();
+    $this->actingAs($admin)->postJson('/laraql', ['queries' => ['q' => ['source' => 'order_line', 'fields' => ['product_code', 'order.code']]]])->assertOk();
+    $sql = collect(DB::getQueryLog())->pluck('query')->last();
+    expect(substr_count((string) $sql, 'left join "orders"'))->toBe(1); // the column's join and the always join are the same key
+});

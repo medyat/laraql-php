@@ -31,7 +31,7 @@ final readonly class Executor
     /** @return array{rows: list<array<string, mixed>>, page: array{number: int, size: int, hasMore: bool}} */
     public function rows(Query $query, Context $context): array
     {
-        $output = $this->output($query->source, $query->fields);
+        $output = $this->output($query->source, $query->fields, $context);
         $input = new Input($context, $query->params, $this->ids($output));
         $select = $this->select($query->source, $output, $query->filters, $query->sort, array_map(
             fn (IncludeQuery $include): Column => $this->localKey($query->source, $include),
@@ -75,16 +75,16 @@ final readonly class Executor
     }
 
     /**
-     * Output columns: the key first, then the requested fields (or every column).
+     * Output columns: the key first, then the requested fields (or every column the user may see).
      *
      * @param  list<Column>|null  $fields
      * @return list<Column>
      */
-    private function output(Source $source, ?array $fields): array
+    private function output(Source $source, ?array $fields, Context $context): array
     {
         $columns = [$source->keyColumn()];
 
-        foreach ($fields ?? array_values($source->columnMap()) as $column) {
+        foreach ($fields ?? array_filter($source->columnMap(), fn (Column $column): bool => $column->visible($context)) as $column) {
             if ($column->id !== $source->key()) {
                 $columns[] = $column;
             }
@@ -155,7 +155,7 @@ final readonly class Executor
                 ?? throw new LogicException("Relation [{$include->name}] of source [{$source->name()}] points at undeclared column [{$include->relation->foreignKey}].");
 
             $parentKeys = $models->map(fn (Model $model): mixed => $model->getAttribute($localKey->alias()))->filter()->unique()->values()->all();
-            $output = $this->output($include->source, $include->fields);
+            $output = $this->output($include->source, $include->fields, $context);
             $input = new Input($context, [], $this->ids($output));
             $filters = [...$include->filters, new Condition($foreignKey, Op::In, $parentKeys)];
             $select = $this->select($include->source, $output, $filters, $include->sort, [

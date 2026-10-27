@@ -50,7 +50,7 @@ final readonly class QueryCompiler
             }
         }
 
-        $searchable = $searchTokens === [] ? [] : $source->searchableColumns();
+        $searchable = $searchTokens === [] ? [] : $source->searchableColumns($input);
         $this->applyJoins($inner, $source, [...$select, ...array_map(fn (Condition $c): Column => $c->column, $conditions), ...$searchable], $input);
         $inner->select(array_map(fn (Column $column) => $this->selectExpression($column, $table), $select));
 
@@ -69,7 +69,8 @@ final readonly class QueryCompiler
             $this->filters->search($inner, array_map(fn (Column $column): string => $column->qualified($table), $searchable), $searchTokens);
         }
 
-        $outer = $source->newModel()->newQueryWithoutScopes()->fromSub($inner, $table);
+        // newModelQuery: global scopes already ran in the sub-query, and the model's own $with is not applied (eager loads come only from load options).
+        $outer = $source->newModel()->newModelQuery()->fromSub($inner, $table);
 
         foreach ($deferred as $condition) {
             $this->filters->apply($outer, $condition->column->alias(), $condition, $dates);
@@ -93,7 +94,7 @@ final readonly class QueryCompiler
     }
 
     /**
-     * Left-joins every table a used column reads through, each once.
+     * Left-joins the source's always-on joins and every table a used column reads through, each once.
      *
      * @param  Builder<Model>  $inner
      * @param  list<Column>  $columns
@@ -102,15 +103,14 @@ final readonly class QueryCompiler
     {
         $joins = $source->joins($input);
         $applied = [];
+        $keys = [...$source->alwaysJoin(), ...array_filter(array_map(fn (Column $column): ?string => $column->join, $columns))];
 
-        foreach ($columns as $column) {
-            $key = $column->join;
-
-            if ($key === null || isset($applied[$key])) {
+        foreach ($keys as $key) {
+            if (isset($applied[$key])) {
                 continue;
             }
 
-            $join = $joins[$key] ?? throw new LogicException("Column [{$column->id}] of source [{$source->name()}] needs join [{$key}], which joins() does not declare.");
+            $join = $joins[$key] ?? throw new LogicException("Source [{$source->name()}] needs join [{$key}], which joins() does not declare.");
             $applied[$key] = true;
 
             $join instanceof Closure ? $join($inner) : $inner->leftJoin($key, ...$join);
