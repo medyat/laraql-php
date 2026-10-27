@@ -1,0 +1,53 @@
+{
+  "name": "uuid-key-filter-in-and-bool",
+  "description": "Filtering a UUID key with in, and a bool column with eq.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "warehouse",
+        "fields": [
+          "code"
+        ],
+        "filters": [
+          {
+            "column": "id",
+            "op": "in",
+            "value": [
+              "7a1c2b3d-4e5f-4a6b-8c9d-0e1f2a3b4c5d",
+              "00000000-0000-0000-0000-000000000000"
+            ]
+          },
+          {
+            "column": "is_active",
+            "op": "eq",
+            "value": true
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": "7a1c2b3d-4e5f-4a6b-8c9d-0e1f2a3b4c5d",
+              "code": "WH-IST"
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

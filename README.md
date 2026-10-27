@@ -94,6 +94,14 @@ then query `POST /laraql`:
 { "queries": { "orders": { "source": "order", "fields": ["code", "gross_total"], "filters": [{ "column": "status", "op": "eq", "value": "done" }], "sort": [{ "column": "due_date", "dir": "desc" }], "page": { "number": 1, "size": 50 } } } }
 ```
 
+`joins()` is for one-to-one and many-to-one lookups (a has-many join would
+multiply parent rows; use `relations()` + `include` for those). The key is the
+joined table's name; to alias a table or join it twice, use the closure form:
+`'c' => fn ($q) => $q->leftJoin('companies as c', 'c.id', '=', 'orders.company_id')`.
+
+Laraql runs on SQLite, MySQL and PostgreSQL (CI replays every fixture on all
+three) and supports integer and string/UUID primary keys.
+
 The full contract is in [`docs/protocol.md`](docs/protocol.md); `fixtures/v1`
 holds request/response pairs you can test a client against.
 

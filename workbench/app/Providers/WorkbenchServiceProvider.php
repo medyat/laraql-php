@@ -7,6 +7,7 @@ use Illuminate\Support\ServiceProvider;
 use Medyat\Laraql\Source\Registry;
 use Workbench\App\Laraql\OrderLineSource;
 use Workbench\App\Laraql\OrderSource;
+use Workbench\App\Laraql\WarehouseSource;
 use Workbench\App\Models\Order;
 use Workbench\App\Policies\OrderPolicy;
 
@@ -21,6 +22,6 @@ class WorkbenchServiceProvider extends ServiceProvider
     {
         Gate::policy(Order::class, OrderPolicy::class);
 
-        $this->app->make(Registry::class)->register(OrderSource::class, OrderLineSource::class);
+        $this->app->make(Registry::class)->register(OrderSource::class, OrderLineSource::class, WarehouseSource::class);
     }
 }

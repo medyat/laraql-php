@@ -119,22 +119,24 @@ final readonly class FilterCompiler
     }
 
     /**
-     * Portable case-insensitive LIKE with an explicit escape character
-     * (SQLite has no default escape; `%`/`_` in user input must be literal).
+     * Portable case-insensitive LIKE: standard SQL only (LOWER, LIKE, ESCAPE),
+     * identifier wrapped by the grammar, value bound. `!` is the escape
+     * character because a backslash inside a string literal is itself an
+     * escape on MySQL, and SQLite has no default escape at all.
      *
      * @param  Builder<Model>  $query
      */
-    /** @param  Builder<Model>  $query */
     private function likeSql(Builder $query, string $target, bool $not): Expression
     {
         $wrapped = $query->getQuery()->getGrammar()->wrap($target);
 
-        return Sql::raw('LOWER('.$wrapped.') '.($not ? 'NOT LIKE' : 'LIKE')." ? ESCAPE '\\'");
+        return Sql::raw('LOWER('.$wrapped.') '.($not ? 'NOT LIKE' : 'LIKE')." ? ESCAPE '!'");
     }
 
+    /** User text is never a pattern: `%`, `_` and the escape character itself become literals. */
     private function escape(mixed $value): string
     {
-        return addcslashes(Raw::string($value), '\\%_');
+        return str_replace(['!', '%', '_'], ['!!', '!%', '!_'], Raw::string($value));
     }
 
     /** @param  Builder<Model>  $query */

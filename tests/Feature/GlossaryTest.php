@@ -8,7 +8,7 @@ use Medyat\Laraql\Glossary\Glossary;
 it('renders one page per source with its columns, relations and options', function (): void {
     $pages = app(Glossary::class)->pages();
 
-    expect(array_keys($pages))->toBe(['protocol.md', 'order.md', 'order_line.md']);
+    expect(array_keys($pages))->toBe(['protocol.md', 'order.md', 'order_line.md', 'warehouse.md']);
 
     $order = $pages['order.md'];
     expect($order)->toContain('# Source `order`')

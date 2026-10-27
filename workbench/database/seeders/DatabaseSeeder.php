@@ -22,5 +22,6 @@ class DatabaseSeeder extends Seeder
         }
 
         DB::table('order_lines')->insert($dataset['rows']['order_line']);
+        DB::table('warehouses')->insert($dataset['rows']['warehouse']);
     }
 }

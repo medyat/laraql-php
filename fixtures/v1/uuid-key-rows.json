@@ -1,0 +1,45 @@
+{
+  "name": "uuid-key-rows",
+  "description": "A string (UUID) primary key: the key column is returned as a string and breaks sort ties in key order.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "warehouse",
+        "fields": [
+          "code",
+          "is_active"
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": "0e3f8c2a-5b1d-4c7e-9a2f-2f7c6a1d9e01",
+              "code": "WH-IZM",
+              "is_active": false
+            },
+            {
+              "id": "7a1c2b3d-4e5f-4a6b-8c9d-0e1f2a3b4c5d",
+              "code": "WH-IST",
+              "is_active": true
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}
