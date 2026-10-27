@@ -20,5 +20,6 @@ return [
     'unknown_relation' => 'Unknown relation ":relation" on source ":source".',
     'include_too_deep' => 'Includes may be nested at most :depth level(s) deep.',
     'limit_exceeded' => 'Value for ":field" exceeds the limit of :max.',
+    'me_requires_user' => '"@me" needs an authenticated user.',
     'search_not_supported' => 'Source ":source" has no searchable columns.',
 ];

@@ -1,0 +1,53 @@
+{
+  "name": "filter-user-me-neq",
+  "description": "neq \"@me\": other owners; NULL owner never matches.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul",
+    "user": "ayse"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "fields": [
+          "code",
+          "owner_id"
+        ],
+        "filters": [
+          {
+            "column": "owner_id",
+            "op": "neq",
+            "value": "@me"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 2,
+              "code": "SO-1002",
+              "owner_id": 1
+            },
+            {
+              "id": 4,
+              "code": "SO-1004",
+              "owner_id": 1
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

@@ -62,7 +62,7 @@ final readonly class Laraql
             throw new ForbiddenException;
         }
 
-        $query = $this->validator->validate($raw, $source);
+        $query = $this->validator->validate($raw, $source, $context);
 
         return $query->kind === 'count'
             ? ['total' => $this->executor->count($query, $context)]

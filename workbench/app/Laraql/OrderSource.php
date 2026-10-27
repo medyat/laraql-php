@@ -41,6 +41,7 @@ final class OrderSource extends Source
             Column::datetime('created_at'),
             Column::text('note'),
             Column::tags('tags')->describe('Free labels such as export, vip, rush.'),
+            Column::user('owner_id')->describe('Owner user id; "@me" resolves to the current user.'),
             Column::int('lines_count')
                 ->expression('(select count(*) from order_lines where order_lines.order_id = orders.id)')
                 ->notFilterable()

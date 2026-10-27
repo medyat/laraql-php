@@ -63,6 +63,10 @@ combinations the type does not support with `422`.
 | `within` | `{ "preset": … }` or `{ "from", "to" }` | date, datetime | Inclusive. Presets: `today`, `this_week`, `next_7_days`, `this_month`, `last_30_days`, `this_quarter`, `overdue` |
 | `is_empty` / `is_not_empty` | — | all | `NULL`; for text types also `''`; for lists also `[]` |
 
+On `user` columns the value `"@me"` (with `eq`, `neq`, `in`, `not_in`) stands
+for the authenticated user's id, so a saved filter "owner is me" works for
+every user; without an authenticated user it is a `422`.
+
 Presets and day ranges are resolved on the server in the **request
 timezone**, so saved filters stay relative. The timezone travels as the
 `X-Timezone` header (name configurable, `laraql.timezone.header`); without it
@@ -155,7 +159,7 @@ Envelope-level problems are the only non-200 answers and carry a single
 | HTTP | `code` | When |
 |---|---|---|
 | 401 | `unauthenticated` | the application's auth middleware rejected the request |
-| 422 | `invalid_request` | no `queries`, an empty map, or a body that is not an object |
+| 422 | `invalid_request` | no `queries`, an empty map, more than `limits.queries_per_request` queries, or a body that is not an object |
 
 Messages come from `lang/en/messages.php` and are publishable.
 

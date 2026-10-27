@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Medyat\Laraql\Query;
 
 use Medyat\Laraql\Column\Column;
+use Medyat\Laraql\Column\Type;
+use Medyat\Laraql\Context;
 use Medyat\Laraql\Filter\Op;
 use Medyat\Laraql\Query\Compiler\DateRange;
 use Medyat\Laraql\Source\Registry;
@@ -22,6 +24,8 @@ final class Validator
 
     private const array INCLUDE_KEYS = ['fields', 'filters', 'sort', 'limit', 'include'];
 
+    private Context $context;
+
     /** @param  array<string, mixed>  $limits  The `laraql.limits` config. */
     public function __construct(
         private readonly Registry $registry,
@@ -29,8 +33,9 @@ final class Validator
     ) {}
 
     /** @param  array<string, mixed>  $raw */
-    public function validate(array $raw, Source $source): Query
+    public function validate(array $raw, Source $source, Context $context): Query
     {
+        $this->context = $context;
         $errors = new Errors;
         $this->unknownKeys($raw, self::QUERY_KEYS, '', $errors);
 
@@ -182,7 +187,36 @@ final class Validator
             return null;
         }
 
+        if ($column->type === Type::User) {
+            $value = $this->resolveMe($value, "{$path}.value", $errors);
+        }
+
         return new Condition($column, $op, $value);
+    }
+
+    /**
+     * `"@me"` on a user column stands for the authenticated user's id, so saved
+     * filters such as "owner is me" work for everyone. Without a user: 422.
+     */
+    private function resolveMe(mixed $value, string $path, Errors $errors): mixed
+    {
+        $values = is_array($value) ? $value : [$value];
+
+        if (! in_array('@me', $values, true)) {
+            return $value;
+        }
+
+        $id = $this->context->user?->getAuthIdentifier();
+
+        if ($id === null) {
+            $errors->add($path, 'me_requires_user');
+
+            return $value;
+        }
+
+        $resolved = array_map(fn (mixed $v): mixed => $v === '@me' ? $id : $v, $values);
+
+        return is_array($value) ? array_values($resolved) : $resolved[0];
     }
 
     private function valueFits(Op $op, Column $column, mixed $value): bool

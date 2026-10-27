@@ -90,6 +90,7 @@ final readonly class Glossary
             '- `is_empty` / `is_not_empty` take no value. On text columns empty means NULL or `""`; on list columns NULL or `[]`.',
             '- `between` takes `[min, max]`; one side may be `null` for an open range.',
             '- `in` / `not_in` take a list (≤ '.$this->limit('in_values').' values); on list columns (`multiselect`, `tags`) they mean "contains any of" / "contains none of".',
+            '- On `user` columns the value `"@me"` means the current user.',
             '- `contains`, `starts_with`, `ends_with` are case-insensitive substring matches; `%` and `_` are literal.',
             '- `eq` on a date column matches the whole day; `before` / `after` are strict; `within` takes `{ "preset": "today" | "this_week" | "next_7_days" | "this_month" | "last_30_days" | "this_quarter" | "overdue" }` or `{ "from": "YYYY-MM-DD", "to": "YYYY-MM-DD" }` (inclusive). Dates resolve in the request timezone.',
             '',

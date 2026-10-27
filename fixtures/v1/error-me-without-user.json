@@ -1,0 +1,42 @@
+{
+  "name": "error-me-without-user",
+  "description": "\"@me\" without an authenticated user is a 422 on the filter value.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul",
+    "user": null
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "filters": [
+          {
+            "column": "owner_id",
+            "op": "eq",
+            "value": "@me"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "error": {
+            "status": 422,
+            "code": "invalid_query",
+            "message": "The query is invalid.",
+            "details": {
+              "filters.0.value": [
+                "\"@me\" needs an authenticated user."
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

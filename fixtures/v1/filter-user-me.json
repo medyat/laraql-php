@@ -1,0 +1,60 @@
+{
+  "name": "filter-user-me",
+  "description": "\"@me\" on a user column resolves to the authenticated user's id (context.user = ayse, id 3).",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul",
+    "user": "ayse"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "fields": [
+          "code",
+          "owner_id"
+        ],
+        "filters": [
+          {
+            "column": "owner_id",
+            "op": "in",
+            "value": [
+              "@me"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 1,
+              "code": "SO-1001",
+              "owner_id": 3
+            },
+            {
+              "id": 3,
+              "code": "SO-1003",
+              "owner_id": 3
+            },
+            {
+              "id": 6,
+              "code": "SO-1006",
+              "owner_id": 3
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

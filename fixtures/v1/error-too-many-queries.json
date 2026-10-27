@@ -1,0 +1,153 @@
+{
+  "name": "error-too-many-queries",
+  "description": "More than limits.queries_per_request (20) queries in one envelope is rejected as a whole (HTTP 422).",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q1": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q2": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q3": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q4": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q5": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q6": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q7": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q8": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q9": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q10": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q11": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q12": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q13": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q14": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q15": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q16": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q17": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q18": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q19": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q20": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      },
+      "q21": {
+        "source": "order",
+        "page": {
+          "size": 1
+        }
+      }
+    }
+  },
+  "response": {
+    "status": 422,
+    "body": {
+      "error": {
+        "status": 422,
+        "code": "invalid_request",
+        "message": "The request is invalid.",
+        "details": {
+          "queries": [
+            "Value for \"queries\" exceeds the limit of 20."
+          ]
+        }
+      }
+    }
+  }
+}

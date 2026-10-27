@@ -47,6 +47,12 @@ final class QueryController
             }
         }
 
+        $max = config('laraql.limits.queries_per_request');
+
+        if (is_int($max) && count($queries) > $max) {
+            throw new InvalidRequestException(['queries' => [LaraqlException::message('limit_exceeded', ['field' => 'queries', 'max' => $max])]]);
+        }
+
         /** @var array<string, mixed> $queries */
         return $queries;
     }

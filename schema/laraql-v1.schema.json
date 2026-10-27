@@ -606,8 +606,10 @@
             "user": {
               "type": [
                 "string",
-                "integer"
-              ]
+                "integer",
+                "null"
+              ],
+              "description": "Dataset user name (default admin); null = unauthenticated."
             }
           }
         },

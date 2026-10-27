@@ -25,9 +25,19 @@ it('replays the fixture', function (string $file): void {
     $this->seed(DatabaseSeeder::class);
     Carbon::setTestNow(CarbonImmutable::parse($fixture['context']['now']));
 
-    $user = new User(['name' => $fixture['context']['user'] ?? 'admin']);
+    $dataset = json_decode((string) file_get_contents(__DIR__.'/../../fixtures/v1/dataset.json'), true, 512, JSON_THROW_ON_ERROR);
+    $name = array_key_exists('user', $fixture['context']) ? $fixture['context']['user'] : 'admin';
+    $record = collect($dataset['users'])->firstWhere('name', $name);
 
-    $this->actingAs($user)
+    $request = $this;
+
+    if ($name !== null) {
+        $user = new User(['name' => $name]);
+        $user->id = $record['id'] ?? null;
+        $request = $this->actingAs($user);
+    }
+
+    $request
         ->withHeader('X-Timezone', $fixture['context']['timezone'])
         ->postJson('/laraql', $fixture['request'])
         ->assertStatus($fixture['response']['status'])
