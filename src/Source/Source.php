@@ -45,6 +45,19 @@ abstract class Source
     }
 
     /**
+     * Joins columns may read through, keyed by the table alias used in `from()`:
+     * `['companies' => ['companies.id', '=', 'orders.company_id']]` or a closure
+     * receiving the sub-query. Applied only when a selected, filtered, sorted or
+     * searched column needs them.
+     *
+     * @return array<string, array{string, string, string}|Closure(Builder<Model>): void>
+     */
+    public function joins(): array
+    {
+        return [];
+    }
+
+    /**
      * Narrow every query on this source (tenant, ownership). Runs in the sub-query.
      *
      * @param  Builder<Model>  $query

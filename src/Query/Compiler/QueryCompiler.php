@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Medyat\Laraql\Query\Compiler;
 
+use Closure;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use LogicException;
 use Medyat\Laraql\Column\Column;
 use Medyat\Laraql\Context;
 use Medyat\Laraql\Query\Condition;
@@ -48,22 +50,23 @@ final readonly class QueryCompiler
             }
         }
 
+        $searchable = $searchTokens === [] ? [] : $source->searchableColumns();
+        $this->applyJoins($inner, $source, [...$select, ...array_map(fn (Condition $c): Column => $c->column, $conditions), ...$searchable]);
         $inner->select(array_map(fn (Column $column) => $this->selectExpression($column, $table), $select));
 
         $dates = new DateRange($context);
         $deferred = [];
 
         foreach ($conditions as $condition) {
-            $condition->column->isPlain()
-                ? $this->filters->apply($inner, "{$table}.{$condition->column->from}", $condition, $dates)
+            $condition->column->pushable()
+                ? $this->filters->apply($inner, $condition->column->qualified($table), $condition, $dates)
                 : $deferred[] = $condition;
         }
 
-        $searchable = $source->searchableColumns();
-        $searchPushable = $searchTokens !== [] && array_all($searchable, fn (Column $column): bool => $column->isPlain());
+        $searchPushable = $searchable !== [] && array_all($searchable, fn (Column $column): bool => $column->pushable());
 
         if ($searchPushable) {
-            $this->filters->search($inner, array_map(fn (Column $column): string => "{$table}.{$column->from}", $searchable), $searchTokens);
+            $this->filters->search($inner, array_map(fn (Column $column): string => $column->qualified($table), $searchable), $searchTokens);
         }
 
         $outer = $source->newModel()->newQueryWithoutScopes()->fromSub($inner, $table);
@@ -72,7 +75,7 @@ final readonly class QueryCompiler
             $this->filters->apply($outer, $condition->column->alias(), $condition, $dates);
         }
 
-        if ($searchTokens !== [] && ! $searchPushable) {
+        if ($searchable !== [] && ! $searchPushable) {
             $this->filters->search($outer, array_map(fn (Column $column): string => $column->alias(), $searchable), $searchTokens);
         }
 
@@ -87,6 +90,31 @@ final readonly class QueryCompiler
         $this->orderBy($outer, $sort, $source->keyColumn());
 
         return $outer;
+    }
+
+    /**
+     * Left-joins every table a used column reads through, each once.
+     *
+     * @param  Builder<Model>  $inner
+     * @param  list<Column>  $columns
+     */
+    private function applyJoins(Builder $inner, Source $source, array $columns): void
+    {
+        $joins = $source->joins();
+        $applied = [];
+
+        foreach ($columns as $column) {
+            $key = $column->join;
+
+            if ($key === null || isset($applied[$key])) {
+                continue;
+            }
+
+            $join = $joins[$key] ?? throw new LogicException("Column [{$column->id}] of source [{$source->name()}] needs join [{$key}], which joins() does not declare.");
+            $applied[$key] = true;
+
+            $join instanceof Closure ? $join($inner) : $inner->leftJoin($key, ...$join);
+        }
     }
 
     /**
@@ -119,8 +147,6 @@ final readonly class QueryCompiler
             return Sql::raw('('.$column->expression.') as '.$grammar->wrap($alias));
         }
 
-        $from = str_contains($column->from, '.') ? $column->from : "{$table}.{$column->from}";
-
-        return "{$from} as {$alias}";
+        return "{$column->qualified($table)} as {$alias}";
     }
 }

@@ -1,0 +1,49 @@
+{
+  "name": "join-search",
+  "description": "A searchable joined column takes part in search.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order_line",
+        "fields": [
+          "product_code"
+        ],
+        "search": "1004",
+        "sort": [
+          {
+            "column": "position",
+            "dir": "asc"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 5,
+              "product_code": "TP-120"
+            },
+            {
+              "id": 6,
+              "product_code": "HC-80"
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

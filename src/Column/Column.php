@@ -17,6 +17,9 @@ final class Column
 
     public private(set) ?string $expression = null;
 
+    /** Key into `Source::joins()` this column needs; inferred from a dotted `from`. */
+    public private(set) ?string $join = null;
+
     public private(set) bool $filterable = true;
 
     public private(set) bool $sortable;
@@ -142,10 +145,24 @@ final class Column
         return new self($id, Type::Json);
     }
 
-    /** Database column to read, `table.column` for joined tables. */
+    /** Database column to read; `table.column` reads through the join named `table` (see `Source::joins()`). */
     public function from(string $column): self
     {
         $this->from = $column;
+
+        $dot = strpos($column, '.');
+
+        if ($dot !== false) {
+            $this->join ??= substr($column, 0, $dot);
+        }
+
+        return $this;
+    }
+
+    /** Join (key into `Source::joins()`) an expression column depends on. */
+    public function join(string $join): self
+    {
+        $this->join = $join;
 
         return $this;
     }
@@ -188,10 +205,16 @@ final class Column
         return $this->expression !== null;
     }
 
-    /** A plain column of the base table: filters on it can be pushed into the sub-query. */
-    public function isPlain(): bool
+    /** Filters and search on a real column (base table or joined) run inside the sub-query. */
+    public function pushable(): bool
     {
-        return $this->expression === null && ! str_contains($this->from, '.');
+        return $this->expression === null;
+    }
+
+    /** Qualified SQL column for the sub-query. */
+    public function qualified(string $table): string
+    {
+        return str_contains($this->from, '.') ? $this->from : "{$table}.{$this->from}";
     }
 
     /** SQL alias used inside the query; dots are not safe in identifiers. */

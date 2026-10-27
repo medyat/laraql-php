@@ -29,6 +29,12 @@ final class OrderLineSource extends Source
             Column::id('product_code')->searchable(),
             Column::int('qty'),
             Column::int('position'),
+            Column::id('order.code')->from('orders.code')->searchable(),
         ];
+    }
+
+    public function joins(): array
+    {
+        return ['orders' => ['orders.id', '=', 'order_lines.order_id']];
     }
 }

@@ -1,0 +1,77 @@
+{
+  "name": "join-filter-and-sort",
+  "description": "Filtering and sorting on a joined column; the join is applied only because a used column needs it.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order_line",
+        "fields": [
+          "product_code",
+          "order.code"
+        ],
+        "filters": [
+          {
+            "column": "order.code",
+            "op": "contains",
+            "value": "100"
+          }
+        ],
+        "sort": [
+          {
+            "column": "order.code",
+            "dir": "desc"
+          },
+          {
+            "column": "position",
+            "dir": "asc"
+          }
+        ],
+        "page": {
+          "number": 1,
+          "size": 3
+        }
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 7,
+              "product_code": "TC-3",
+              "order": {
+                "code": "SO-1006"
+              }
+            },
+            {
+              "id": 5,
+              "product_code": "TP-120",
+              "order": {
+                "code": "SO-1004"
+              }
+            },
+            {
+              "id": 6,
+              "product_code": "HC-80",
+              "order": {
+                "code": "SO-1004"
+              }
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 3,
+            "hasMore": true
+          }
+        }
+      }
+    }
+  }
+}

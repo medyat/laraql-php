@@ -1,0 +1,69 @@
+{
+  "name": "join-select-nested",
+  "description": "A joined column (order.code reads orders.code through the orders join) is selected like any other and nests under its dotted id.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order_line",
+        "fields": [
+          "product_code",
+          "order.code"
+        ],
+        "filters": [
+          {
+            "column": "order.code",
+            "op": "eq",
+            "value": "SO-1001"
+          }
+        ],
+        "sort": [
+          {
+            "column": "position",
+            "dir": "asc"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 1,
+              "product_code": "HC-80",
+              "order": {
+                "code": "SO-1001"
+              }
+            },
+            {
+              "id": 2,
+              "product_code": "SK-80",
+              "order": {
+                "code": "SO-1001"
+              }
+            },
+            {
+              "id": 3,
+              "product_code": "GP-25",
+              "order": {
+                "code": "SO-1001"
+              }
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

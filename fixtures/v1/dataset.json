@@ -74,6 +74,12 @@
         },
         "position": {
           "type": "int"
+        },
+        "order.code": {
+          "type": "id",
+          "from": "orders.code",
+          "join": "orders",
+          "searchable": true
         }
       },
       "relations": {},

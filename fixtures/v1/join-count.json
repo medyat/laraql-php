@@ -1,0 +1,36 @@
+{
+  "name": "join-count",
+  "description": "count with a filter on a joined column.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order_line",
+        "kind": "count",
+        "filters": [
+          {
+            "column": "order.code",
+            "op": "in",
+            "value": [
+              "SO-1001",
+              "SO-1004"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "total": 5
+        }
+      }
+    }
+  }
+}
