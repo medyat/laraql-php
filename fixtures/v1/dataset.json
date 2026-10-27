@@ -8,7 +8,7 @@
           "type": "int"
         },
         "code": {
-          "type": "string",
+          "type": "id",
           "searchable": true
         },
         "customer": {

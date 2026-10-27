@@ -59,14 +59,11 @@ return [
     | Sources
     |--------------------------------------------------------------------------
     |
-    | Sources are discovered through the #[Source('key')] attribute in the
-    | namespaces listed under `discover`; explicit classes may be added too.
+    | Source classes (extending Medyat\Laraql\Source\Source) registered at
+    | boot. Packages and apps may also call Registry::register() themselves.
     |
     */
 
-    'sources' => [
-        'discover' => ['App\\Laraql'],
-        'classes' => [],
-    ],
+    'sources' => [],
 
 ];

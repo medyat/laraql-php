@@ -1,25 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Workbench\Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
-use Workbench\Database\Factories\UserFactory;
+use Illuminate\Support\Facades\DB;
 
+/** Seeds fixtures/v1/dataset.json so the fixtures replay against real tables. */
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // UserFactory::new()->times(10)->create();
+        $dataset = json_decode((string) file_get_contents(__DIR__.'/../../../fixtures/v1/dataset.json'), true, 512, JSON_THROW_ON_ERROR);
 
-        UserFactory::new()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        foreach ($dataset['rows']['order'] as $order) {
+            $order['tags'] = json_encode($order['tags']);
+            $order['created_at'] = CarbonImmutable::parse($order['created_at'])->utc()->format('Y-m-d H:i:s');
+            DB::table('orders')->insert($order);
+        }
+
+        DB::table('order_lines')->insert($dataset['rows']['order_line']);
     }
 }

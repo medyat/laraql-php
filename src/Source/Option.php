@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Medyat\Laraql\Source;
+
+use Closure;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * A named, server-side behaviour a source declares; clients send its name in
+ * `options`. Three kinds: narrow the row set, eager-load a relation, add keys
+ * to each row.
+ */
+final readonly class Option
+{
+    public const string SCOPE = 'scope';
+
+    public const string LOAD = 'load';
+
+    public const string DECORATE = 'decorate';
+
+    /**
+     * @param  Closure(Builder<Model>): void|null  $scope
+     * @param  Closure(Model, array<string, mixed>): array<string, mixed>|null  $decorator
+     */
+    private function __construct(
+        public string $kind,
+        public ?Closure $scope = null,
+        public ?string $relation = null,
+        public ?Closure $decorator = null,
+    ) {}
+
+    /** @param  Closure(Builder<Model>): void  $scope */
+    public static function scope(Closure $scope): self
+    {
+        return new self(self::SCOPE, scope: $scope);
+    }
+
+    public static function load(string $relation): self
+    {
+        return new self(self::LOAD, relation: $relation);
+    }
+
+    /** @param  Closure(Model, array<string, mixed>): array<string, mixed>  $decorator */
+    public static function decorate(Closure $decorator): self
+    {
+        return new self(self::DECORATE, decorator: $decorator);
+    }
+}
