@@ -1,0 +1,111 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - main
+      - '*.x'
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [8.4, 8.5]
+        laravel: [13.*]
+        stability: [prefer-lowest, prefer-stable]
+        include:
+          - laravel: 13.*
+            testbench: 11.*
+
+    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, fileinfo, sqlite, pdo_sqlite, bcmath, intl
+          ini-values: error_reporting=E_ALL
+          tools: composer:v2
+          coverage: none
+
+      - name: Install dependencies
+        run: |
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress --no-scripts
+          composer run prepare
+
+      - name: PHPStan
+        run: composer analyse
+
+      - name: Linter
+        run: composer lint:check
+
+      - name: Type Coverage
+        run: composer test:types
+
+      - name: Test Suite
+        run: composer test:unit
+
+  # Dialect-specific behaviour (ILIKE, JSON paths, casts) is only exercised on PostgreSQL.
+  tests-pgsql:
+    runs-on: ubuntu-latest
+    name: PostgreSQL - P8.4 - L13.* - prefer-stable
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: laraql
+          POSTGRES_USER: laraql
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U laraql"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: laraql
+      DB_USERNAME: laraql
+      DB_PASSWORD: secret
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: 8.4
+          extensions: dom, curl, libxml, mbstring, zip, fileinfo, pgsql, pdo_pgsql, bcmath, intl
+          ini-values: error_reporting=E_ALL
+          tools: composer:v2
+          coverage: none
+
+      - name: Install dependencies
+        run: |
+          composer update --prefer-stable --prefer-dist --no-interaction --no-progress --no-scripts
+          composer run prepare
+
+      - name: Test Suite
+        run: composer test:unit
