@@ -31,6 +31,9 @@ final class Column
     /** @var list<string|int>|null */
     public private(set) ?array $options = null;
 
+    /** Human text for the glossary (what the column means, units, caveats). */
+    public private(set) ?string $description = null;
+
     private function __construct(public readonly string $id, public readonly Type $type)
     {
         $dot = strrpos($id, '.');
@@ -182,6 +185,13 @@ final class Column
         }
 
         $this->searchable = true;
+
+        return $this;
+    }
+
+    public function describe(string $description): self
+    {
+        $this->description = $description;
 
         return $this;
     }

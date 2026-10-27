@@ -32,6 +32,12 @@ abstract class Source
     /** @return list<Column> */
     abstract public function columns(): array;
 
+    /** One or two sentences for the glossary: what a row is and when to query this source. */
+    public function describe(): ?string
+    {
+        return null;
+    }
+
     /** @return array<string, Relation> */
     public function relations(): array
     {

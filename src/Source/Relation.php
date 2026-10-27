@@ -19,11 +19,12 @@ final readonly class Relation
         public string $source,
         public string $foreignKey,
         public ?string $localKey = null,
+        public ?string $description = null,
     ) {}
 
     /** @param  class-string<Source>  $source */
-    public static function hasMany(string $source, string $foreignKey, ?string $localKey = null): self
+    public static function hasMany(string $source, string $foreignKey, ?string $localKey = null, ?string $description = null): self
     {
-        return new self($source, $foreignKey, $localKey);
+        return new self($source, $foreignKey, $localKey, $description);
     }
 }

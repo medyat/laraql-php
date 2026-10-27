@@ -42,7 +42,64 @@ php artisan vendor:publish --tag="laraql-lang"
 
 ## Usage
 
-<!-- Add a basic usage example here. -->
+Declare a source: the model, the typed columns clients may read, and what
+else the source offers.
+
+```php
+use Medyat\Laraql\Column\Column;
+use Medyat\Laraql\Source\{Option, Relation, Source};
+
+final class OrderSource extends Source
+{
+    public function name(): string { return 'order'; }
+
+    public function model(): string { return Order::class; }
+
+    public function describe(): ?string { return 'Sales orders.'; }
+
+    public function columns(): array
+    {
+        return [
+            Column::id('code')->searchable()->describe('Order number, unique.'),
+            Column::string('customer')->searchable(),
+            Column::select('status', ['draft', 'released', 'done']),
+            Column::money('gross_total', 'TRY'),
+            Column::date('due_date'),
+            Column::string('company.title')->from('companies.title'),
+            Column::int('lines_count')->expression('(select count(*) from order_lines where order_lines.order_id = orders.id)')->notFilterable(),
+        ];
+    }
+
+    public function joins(): array
+    {
+        return ['companies' => ['companies.id', '=', 'orders.company_id']];
+    }
+
+    public function relations(): array
+    {
+        return ['lines' => Relation::hasMany(OrderLineSource::class, 'order_id')];
+    }
+
+    public function options(): array
+    {
+        return ['only_done' => Option::scope(fn ($q) => $q->where('status', 'done'), 'Only finished orders.')];
+    }
+}
+```
+
+Register it in `config/laraql.php` (`sources`) or with `Registry::register()`,
+then query `POST /laraql`:
+
+```json
+{ "queries": { "orders": { "source": "order", "fields": ["code", "gross_total"], "filters": [{ "column": "status", "op": "eq", "value": "done" }], "sort": [{ "column": "due_date", "dir": "desc" }], "page": { "number": 1, "size": 50 } } } }
+```
+
+The full contract is in [`docs/protocol.md`](docs/protocol.md); `fixtures/v1`
+holds request/response pairs you can test a client against.
+
+For AI agents, `php artisan laraql:glossary` renders `protocol.md` and one
+page per source from the definitions above (point your MCP resources at
+them); `--check` fails in CI when they are stale.
 
 ## Changelog
 

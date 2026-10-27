@@ -27,25 +27,26 @@ final readonly class Option
      */
     private function __construct(
         public string $kind,
+        public ?string $description = null,
         public ?Closure $scope = null,
         public ?string $relation = null,
         public ?Closure $decorator = null,
     ) {}
 
     /** @param  Closure(Builder<Model>): void  $scope */
-    public static function scope(Closure $scope): self
+    public static function scope(Closure $scope, ?string $description = null): self
     {
-        return new self(self::SCOPE, scope: $scope);
+        return new self(self::SCOPE, $description, scope: $scope);
     }
 
-    public static function load(string $relation): self
+    public static function load(string $relation, ?string $description = null): self
     {
-        return new self(self::LOAD, relation: $relation);
+        return new self(self::LOAD, $description, relation: $relation);
     }
 
     /** @param  Closure(Model, array<string, mixed>): array<string, mixed>  $decorator */
-    public static function decorate(Closure $decorator): self
+    public static function decorate(Closure $decorator, ?string $description = null): self
     {
-        return new self(self::DECORATE, decorator: $decorator);
+        return new self(self::DECORATE, $description, decorator: $decorator);
     }
 }

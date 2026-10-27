@@ -6,6 +6,8 @@ namespace Medyat\Laraql;
 
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
+use Medyat\Laraql\Console\GlossaryCommand;
+use Medyat\Laraql\Glossary\Glossary;
 use Medyat\Laraql\Query\Validator;
 use Medyat\Laraql\Source\Registry;
 use Medyat\Laraql\Support\Raw;
@@ -23,6 +25,10 @@ class LaraqlServiceProvider extends ServiceProvider
 
         $this->app->singleton(Validator::class, function (Application $app): Validator {
             return new Validator($app->make(Registry::class), Raw::assoc($app->make('config')->get('laraql.limits')));
+        });
+
+        $this->app->singleton(Glossary::class, function (Application $app): Glossary {
+            return new Glossary($app->make(Registry::class), Raw::assoc($app->make('config')->get('laraql.limits')));
         });
 
         $this->app->singleton(Laraql::class);
@@ -56,5 +62,7 @@ class LaraqlServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../lang' => $this->app->langPath('vendor/laraql'),
         ], ['laraql', 'laraql-lang']);
+
+        $this->commands([GlossaryCommand::class]);
     }
 }

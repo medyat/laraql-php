@@ -1,6 +1,7 @@
 laravel: '@testbench'
 
 providers:
+  - Medyat\Laraql\LaraqlServiceProvider
   - Workbench\App\Providers\WorkbenchServiceProvider
 
 migrations:
