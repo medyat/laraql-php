@@ -1,0 +1,40 @@
+{
+  "name": "filter-contains-escapes-wildcards",
+  "description": "% and _ in the value are literal characters, not wildcards.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "fields": [
+          "code"
+        ],
+        "filters": [
+          {
+            "column": "note",
+            "op": "contains",
+            "value": "%"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

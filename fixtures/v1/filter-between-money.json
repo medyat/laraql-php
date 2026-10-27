@@ -1,0 +1,55 @@
+{
+  "name": "filter-between-money",
+  "description": "between is inclusive on both ends.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "fields": [
+          "code",
+          "gross_total"
+        ],
+        "filters": [
+          {
+            "column": "gross_total",
+            "op": "between",
+            "value": [
+              300.5,
+              980
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 2,
+              "code": "SO-1002",
+              "gross_total": 300.5
+            },
+            {
+              "id": 3,
+              "code": "SO-1003",
+              "gross_total": 980.0
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "name": "error-too-many-sort-keys",
+  "description": "More than limits.sort (3) sort keys are rejected.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "sort": [
+          {
+            "column": "code",
+            "dir": "asc"
+          },
+          {
+            "column": "status",
+            "dir": "asc"
+          },
+          {
+            "column": "customer",
+            "dir": "asc"
+          },
+          {
+            "column": "gross_total",
+            "dir": "asc"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "error": {
+            "status": 422,
+            "code": "invalid_query",
+            "message": "The query is invalid.",
+            "details": {
+              "sort": [
+                "Value for \"sort\" exceeds the limit of 3."
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

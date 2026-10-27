@@ -1,0 +1,68 @@
+{
+  "name": "batch-two-sources",
+  "description": "A batch runs independent queries against different sources under their own keys.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "orders": {
+        "source": "order",
+        "fields": [
+          "code"
+        ],
+        "page": {
+          "number": 1,
+          "size": 1
+        }
+      },
+      "lines": {
+        "source": "order_line",
+        "fields": [
+          "product_code"
+        ],
+        "filters": [
+          {
+            "column": "order_id",
+            "op": "eq",
+            "value": 6
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "orders": {
+          "rows": [
+            {
+              "id": 1,
+              "code": "SO-1001"
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 1,
+            "hasMore": true
+          }
+        },
+        "lines": {
+          "rows": [
+            {
+              "id": 7,
+              "product_code": "TC-3"
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

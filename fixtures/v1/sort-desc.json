@@ -1,0 +1,72 @@
+{
+  "name": "sort-desc",
+  "description": "desc.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "fields": [
+          "code",
+          "due_date"
+        ],
+        "sort": [
+          {
+            "column": "due_date",
+            "dir": "desc"
+          }
+        ],
+        "filters": [
+          {
+            "column": "due_date",
+            "op": "is_not_empty"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 5,
+              "code": "SO-1005",
+              "due_date": "2026-11-15"
+            },
+            {
+              "id": 4,
+              "code": "SO-1004",
+              "due_date": "2026-10-27"
+            },
+            {
+              "id": 2,
+              "code": "SO-1002",
+              "due_date": "2026-10-05"
+            },
+            {
+              "id": 3,
+              "code": "SO-1003",
+              "due_date": "2026-10-05"
+            },
+            {
+              "id": 1,
+              "code": "SO-1001",
+              "due_date": "2026-10-01"
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

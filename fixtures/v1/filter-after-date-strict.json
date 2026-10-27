@@ -1,0 +1,52 @@
+{
+  "name": "filter-after-date-strict",
+  "description": "after is strict: Oct 5 itself is excluded; NULL never matches.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "fields": [
+          "code",
+          "due_date"
+        ],
+        "filters": [
+          {
+            "column": "due_date",
+            "op": "after",
+            "value": "2026-10-05"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 4,
+              "code": "SO-1004",
+              "due_date": "2026-10-27"
+            },
+            {
+              "id": 5,
+              "code": "SO-1005",
+              "due_date": "2026-11-15"
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

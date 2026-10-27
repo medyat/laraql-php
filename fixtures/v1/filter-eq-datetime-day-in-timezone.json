@@ -1,0 +1,47 @@
+{
+  "name": "filter-eq-datetime-day-in-timezone",
+  "description": "eq on a datetime column is the local day in the request timezone: 2026-10-27 Europe/Istanbul spans 2026-10-26T21:00Z to 2026-10-27T20:59:59Z, so SO-1005 (16:00Z on Oct 26) is out and SO-1006 (06:30Z on Oct 27) is in.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "fields": [
+          "code",
+          "created_at"
+        ],
+        "filters": [
+          {
+            "column": "created_at",
+            "op": "eq",
+            "value": "2026-10-27"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 6,
+              "code": "SO-1006",
+              "created_at": "2026-10-27T06:30:00Z"
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

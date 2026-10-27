@@ -1,0 +1,95 @@
+{
+  "name": "include-lines",
+  "description": "include loads a declared relation with the same query language; included rows nest under the relation key and always carry their key.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "fields": [
+          "code"
+        ],
+        "filters": [
+          {
+            "column": "code",
+            "op": "in",
+            "value": [
+              "SO-1001",
+              "SO-1004"
+            ]
+          }
+        ],
+        "include": {
+          "lines": {
+            "fields": [
+              "product_code",
+              "qty"
+            ],
+            "sort": [
+              {
+                "column": "position",
+                "dir": "asc"
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 1,
+              "code": "SO-1001",
+              "lines": [
+                {
+                  "id": 1,
+                  "product_code": "HC-80",
+                  "qty": 2
+                },
+                {
+                  "id": 2,
+                  "product_code": "SK-80",
+                  "qty": 10
+                },
+                {
+                  "id": 3,
+                  "product_code": "GP-25",
+                  "qty": 1
+                }
+              ]
+            },
+            {
+              "id": 4,
+              "code": "SO-1004",
+              "lines": [
+                {
+                  "id": 5,
+                  "product_code": "TP-120",
+                  "qty": 3
+                },
+                {
+                  "id": 6,
+                  "product_code": "HC-80",
+                  "qty": 1
+                }
+              ]
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

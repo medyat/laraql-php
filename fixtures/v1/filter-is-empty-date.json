@@ -1,0 +1,46 @@
+{
+  "name": "filter-is-empty-date",
+  "description": "is_empty on a date column.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "fields": [
+          "code",
+          "due_date"
+        ],
+        "filters": [
+          {
+            "column": "due_date",
+            "op": "is_empty"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 6,
+              "code": "SO-1006",
+              "due_date": null
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "name": "fields-expression-column",
+  "description": "Expression columns (lines_count) are selectable and sortable.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "fields": [
+          "code",
+          "lines_count"
+        ],
+        "sort": [
+          {
+            "column": "lines_count",
+            "dir": "desc"
+          }
+        ],
+        "page": {
+          "number": 1,
+          "size": 3
+        }
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 1,
+              "code": "SO-1001",
+              "lines_count": 3
+            },
+            {
+              "id": 4,
+              "code": "SO-1004",
+              "lines_count": 2
+            },
+            {
+              "id": 2,
+              "code": "SO-1002",
+              "lines_count": 1
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 3,
+            "hasMore": true
+          }
+        }
+      }
+    }
+  }
+}

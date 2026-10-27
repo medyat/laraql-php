@@ -1,0 +1,59 @@
+{
+  "name": "filter-within-overdue",
+  "description": "Preset overdue = strictly before today.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "fields": [
+          "code",
+          "due_date"
+        ],
+        "filters": [
+          {
+            "column": "due_date",
+            "op": "within",
+            "value": {
+              "preset": "overdue"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 1,
+              "code": "SO-1001",
+              "due_date": "2026-10-01"
+            },
+            {
+              "id": 2,
+              "code": "SO-1002",
+              "due_date": "2026-10-05"
+            },
+            {
+              "id": 3,
+              "code": "SO-1003",
+              "due_date": "2026-10-05"
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

@@ -107,13 +107,37 @@ products`). Unknown names are `422`. Options are the replacement for ad-hoc
 
 ## Errors
 
-| Status | When | `details` |
+Per-query errors live inside `results` and never change the HTTP status:
+
+| `status` | `code` | When | `details` |
+|---|---|---|---|
+| 404 | `unknown_source` | unknown source key | — |
+| 403 | `forbidden` | the source's policy denies `viewAny`, or an included source does | — |
+| 422 | `invalid_query` | unknown column / operator / option / relation, type–operator mismatch, limit exceeded | path → messages, e.g. `{ "filters.2.op": ["…"] }`, `{ "page.size": ["…"] }` |
+
+Envelope-level problems are the only non-200 answers and carry a single
+`error` object instead of `results`:
+
+| HTTP | `code` | When |
 |---|---|---|
-| 404 | unknown source | — |
-| 403 | the source's policy denies `viewAny`, or an included source does | — |
-| 422 | unknown column / operator / option / relation, type–operator mismatch, limit exceeded | `{ "filters.2.op": ["…"] }` style paths into the query |
+| 401 | `unauthenticated` | the application's auth middleware rejected the request |
+| 422 | `invalid_request` | no `queries`, an empty map, or a body that is not an object |
 
 Messages come from `lang/en/messages.php` and are publishable.
+
+## Value representation
+
+- `int` → JSON integer; `float`, `money`, `percentage` → JSON number (the
+  server casts database decimals); `bool` → JSON boolean.
+- `date` → `YYYY-MM-DD`; `datetime` → ISO 8601 in UTC with `Z`.
+- Empty values are `null`; text columns may also hold `''`, list columns `[]`.
+- Dotted column ids are nested in rows: `company.title` → `{ "company": { "title": "…" } }`.
+
+## Fixtures
+
+`fixtures/v1/*.json` are the executable form of this document, computed
+against `fixtures/v1/dataset.json`; see the README there for the file format.
+A behaviour that is not pinned by a fixture is not part of the contract.
 
 ## Limits (defaults)
 

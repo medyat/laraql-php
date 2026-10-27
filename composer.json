@@ -26,8 +26,9 @@
     },
     "require-dev": {
         "larastan/larastan": "^3.9",
-        "laravel/pint": "^1.29",
         "laravel/pao": "^1.0",
+        "laravel/pint": "^1.29",
+        "opis/json-schema": "^2.4",
         "orchestra/testbench": "^11.0",
         "pestphp/pest": "^5.0",
         "pestphp/pest-plugin-laravel": "^5.0",

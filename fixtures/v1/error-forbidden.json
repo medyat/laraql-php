@@ -1,0 +1,30 @@
+{
+  "name": "error-forbidden",
+  "description": "A source whose policy denies viewAny answers 403 inside the envelope (context.user is a user without the ability).",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul",
+    "user": "guest"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "error": {
+            "status": 403,
+            "code": "forbidden",
+            "message": "This action is unauthorized."
+          }
+        }
+      }
+    }
+  }
+}

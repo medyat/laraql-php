@@ -1,0 +1,36 @@
+{
+  "name": "count",
+  "description": "kind: count applies the same filters and search but no paging; the result carries only total.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "kind": "count",
+        "filters": [
+          {
+            "column": "status",
+            "op": "in",
+            "value": [
+              "released",
+              "done"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "total": 4
+        }
+      }
+    }
+  }
+}

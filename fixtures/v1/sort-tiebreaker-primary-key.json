@@ -1,0 +1,71 @@
+{
+  "name": "sort-tiebreaker-primary-key",
+  "description": "Equal sort values fall back to the primary key ascending (two 'Ege Tarim Makine' rows: 1 before 4).",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "fields": [
+          "code",
+          "customer"
+        ],
+        "sort": [
+          {
+            "column": "customer",
+            "dir": "asc"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 3,
+              "code": "SO-1003",
+              "customer": "Atlas Kaldirma"
+            },
+            {
+              "id": 6,
+              "code": "SO-1006",
+              "customer": "Delta Forklift"
+            },
+            {
+              "id": 1,
+              "code": "SO-1001",
+              "customer": "Ege Tarim Makine"
+            },
+            {
+              "id": 4,
+              "code": "SO-1004",
+              "customer": "Ege Tarim Makine"
+            },
+            {
+              "id": 5,
+              "code": "SO-1005",
+              "customer": "Marmara Vinc"
+            },
+            {
+              "id": 2,
+              "code": "SO-1002",
+              "customer": "Sakarya Romork"
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

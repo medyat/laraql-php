@@ -1,0 +1,45 @@
+{
+  "name": "filter-ends-with",
+  "description": "ends_with.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "fields": [
+          "code"
+        ],
+        "filters": [
+          {
+            "column": "code",
+            "op": "ends_with",
+            "value": "05"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 5,
+              "code": "SO-1005"
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}
