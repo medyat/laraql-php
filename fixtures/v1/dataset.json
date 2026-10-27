@@ -53,7 +53,10 @@
         }
       },
       "options": [
-        "only_done"
+        "only_done",
+        "with_lines",
+        "product_codes",
+        "with_ability"
       ]
     },
     "order_line": {

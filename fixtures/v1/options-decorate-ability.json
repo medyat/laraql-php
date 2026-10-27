@@ -1,0 +1,80 @@
+{
+  "name": "options-decorate-ability",
+  "description": "A decorate option adds nested keys per row (ability flags computed from the row's state).",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "fields": [
+          "code",
+          "status"
+        ],
+        "filters": [
+          {
+            "column": "status",
+            "op": "in",
+            "value": [
+              "done",
+              "draft"
+            ]
+          }
+        ],
+        "options": [
+          "with_ability"
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 2,
+              "code": "SO-1002",
+              "status": "draft",
+              "ability": {
+                "can_edit": true
+              }
+            },
+            {
+              "id": 3,
+              "code": "SO-1003",
+              "status": "done",
+              "ability": {
+                "can_edit": false
+              }
+            },
+            {
+              "id": 5,
+              "code": "SO-1005",
+              "status": "done",
+              "ability": {
+                "can_edit": false
+              }
+            },
+            {
+              "id": 6,
+              "code": "SO-1006",
+              "status": "draft",
+              "ability": {
+                "can_edit": true
+              }
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

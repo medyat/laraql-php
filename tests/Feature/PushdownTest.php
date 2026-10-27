@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\DB;
 use Workbench\App\Models\User;
+use Workbench\Database\Seeders\DatabaseSeeder;
 
 /**
  * The two-layer promise: real columns (base table or joined) are filtered and
@@ -43,4 +44,17 @@ it('filters expression columns on the outer query by alias', function (): void {
 
     expect($sql)->toContain('((select count(*) from order_lines where order_lines.order_id = orders.id)) as "lines_count"'); // expressions are always parenthesised
     expect($sql)->toMatch('/\) as "orders" order by "lines_count" desc, "id" asc/');
+});
+
+it('runs one extra query for a load option, not one per row', function (): void {
+    $this->seed(DatabaseSeeder::class);
+    DB::enableQueryLog();
+
+    $this->actingAs(new User(['name' => 'admin']))->postJson('/laraql', ['queries' => ['q' => [
+        'source' => 'order',
+        'fields' => ['code'],
+        'options' => ['with_lines', 'product_codes'],
+    ]]])->assertOk()->assertJsonCount(6, 'results.q.rows');
+
+    expect(DB::getQueryLog())->toHaveCount(2); // rows + eager-loaded lines
 });

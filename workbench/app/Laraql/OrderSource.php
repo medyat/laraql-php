@@ -55,6 +55,17 @@ final class OrderSource extends Source
 
     public function options(): array
     {
-        return ['only_done' => Option::scope(fn (Builder $query) => $query->where('status', 'done'), 'Only orders whose status is done.')];
+        return [
+            'only_done' => Option::scope(fn (Builder $query) => $query->where('status', 'done'), 'Only orders whose status is done.'),
+            'with_lines' => Option::load('lines', 'Eager-loads the lines so decorators can read them without extra queries.'),
+            'product_codes' => Option::decorate(
+                fn (Order $order, array $row): array => $row + ['product_codes' => $order->lines->pluck('product_code')->all()],
+                'Adds product_codes: the product codes on the order, in position order.',
+            ),
+            'with_ability' => Option::decorate(
+                fn (Order $order, array $row): array => $row + ['ability' => ['can_edit' => $order->status !== 'done']],
+                'Adds ability.can_edit: orders can be edited until they are done.',
+            ),
+        ];
     }
 }
