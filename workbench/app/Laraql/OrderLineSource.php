@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Workbench\App\Laraql;
 
 use Medyat\Laraql\Column\Column;
+use Medyat\Laraql\Input;
 use Medyat\Laraql\Source\Source;
 use Workbench\App\Models\OrderLine;
 
@@ -33,7 +34,7 @@ final class OrderLineSource extends Source
         ];
     }
 
-    public function joins(): array
+    public function joins(Input $input): array
     {
         return ['orders' => ['orders.id', '=', 'order_lines.order_id']];
     }

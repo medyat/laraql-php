@@ -21,7 +21,8 @@
             "draft",
             "released",
             "done"
-          ]
+          ],
+          "always": true
         },
         "gross_total": {
           "type": "money",
@@ -48,12 +49,23 @@
         "owner_id": {
           "type": "user",
           "note": "@me resolves to context.user"
+        },
+        "lines_qty": {
+          "type": "int",
+          "from": "line_totals.qty",
+          "join": "line_totals",
+          "note": "sum of line qty via a joined sub-query; params.product_code narrows it to one product"
         }
       },
       "relations": {
         "lines": {
           "source": "order_line",
           "foreign_key": "order_id"
+        }
+      },
+      "params": {
+        "product_code": {
+          "type": "id"
         }
       },
       "options": [

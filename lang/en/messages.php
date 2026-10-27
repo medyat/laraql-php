@@ -17,6 +17,7 @@ return [
     'column_not_sortable' => 'Column ":column" cannot be sorted.',
     'operator_not_allowed' => 'Operator ":op" is not allowed on column ":column" (:type).',
     'unknown_option' => 'Unknown option ":option" on source ":source".',
+    'unknown_param' => 'Unknown parameter ":param" on source ":source".',
     'unknown_relation' => 'Unknown relation ":relation" on source ":source".',
     'include_too_deep' => 'Includes may be nested at most :depth level(s) deep.',
     'limit_exceeded' => 'Value for ":field" exceeds the limit of :max.',

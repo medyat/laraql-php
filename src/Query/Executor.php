@@ -10,6 +10,7 @@ use LogicException;
 use Medyat\Laraql\Column\Column;
 use Medyat\Laraql\Context;
 use Medyat\Laraql\Filter\Op;
+use Medyat\Laraql\Input;
 use Medyat\Laraql\Query\Compiler\QueryCompiler;
 use Medyat\Laraql\Result\RowFormatter;
 use Medyat\Laraql\Source\Option;
@@ -31,13 +32,14 @@ final readonly class Executor
     public function rows(Query $query, Context $context): array
     {
         $output = $this->output($query->source, $query->fields);
+        $input = new Input($context, $query->params, $this->ids($output));
         $select = $this->select($query->source, $output, $query->filters, $query->sort, array_map(
             fn (IncludeQuery $include): Column => $this->localKey($query->source, $include),
             array_values($query->include),
         ));
 
         $models = $this->compiler
-            ->build($query->source, $select, $query->filters, $query->sort, $query->searchTokens, $query->options, $context)
+            ->build($query->source, $select, $query->filters, $query->sort, $query->searchTokens, $query->options, $input)
             ->offset($query->page->offset())
             ->limit($query->page->size + 1)
             ->get();
@@ -45,7 +47,7 @@ final readonly class Executor
         $hasMore = $models->count() > $query->page->size;
         $models = $models->take($query->page->size);
 
-        $rows = $this->formatAll($models, $output, $query->source, $query->options);
+        $rows = $this->formatAll($models, $output, $query->source, $query->options, $input);
         $this->attachIncludes($rows, $models, $query->source, $query->include, $context);
 
         return [
@@ -59,8 +61,17 @@ final readonly class Executor
         $select = $this->select($query->source, [$query->source->keyColumn()], $query->filters, [], []);
 
         return $this->compiler
-            ->build($query->source, $select, $query->filters, [], $query->searchTokens, $query->options, $context)
+            ->build($query->source, $select, $query->filters, [], $query->searchTokens, $query->options, new Input($context, $query->params))
             ->count();
+    }
+
+    /**
+     * @param  list<Column>  $columns
+     * @return list<string>
+     */
+    private function ids(array $columns): array
+    {
+        return array_map(fn (Column $column): string => $column->id, $columns);
     }
 
     /**
@@ -83,7 +94,7 @@ final readonly class Executor
     }
 
     /**
-     * Columns the sub-query must expose: output + filtered + sorted + relation keys, each once.
+     * Columns the sub-query must expose: output + filtered + sorted + relation keys + those marked `always()`, each once.
      *
      * @param  list<Column>  $output
      * @param  list<Condition>  $filters
@@ -93,9 +104,10 @@ final readonly class Executor
      */
     private function select(Source $source, array $output, array $filters, array $sort, array $extra): array
     {
+        $always = array_values(array_filter($source->columnMap(), fn (Column $column): bool => $column->always));
         $byId = [];
 
-        foreach ([...$output, ...array_map(fn (Condition $c): Column => $c->column, $filters), ...array_map(fn (Sort $s): Column => $s->column, $sort), ...$extra] as $column) {
+        foreach ([...$output, ...array_map(fn (Condition $c): Column => $c->column, $filters), ...array_map(fn (Sort $s): Column => $s->column, $sort), ...$extra, ...$always] as $column) {
             $byId[$column->id] ??= $column;
         }
 
@@ -108,7 +120,7 @@ final readonly class Executor
      * @param  list<string>  $options
      * @return list<array<string, mixed>>
      */
-    private function formatAll(Collection $models, array $output, Source $source, array $options): array
+    private function formatAll(Collection $models, array $output, Source $source, array $options, Input $input): array
     {
         $decorators = $source->decorators();
 
@@ -120,7 +132,7 @@ final readonly class Executor
             }
         }
 
-        return array_values($models->map(fn (Model $model): array => $this->formatter->format($model, $output, $decorators))->all());
+        return array_values($models->map(fn (Model $model): array => $this->formatter->format($model, $output, $decorators, $input))->all());
     }
 
     /**
@@ -144,6 +156,7 @@ final readonly class Executor
 
             $parentKeys = $models->map(fn (Model $model): mixed => $model->getAttribute($localKey->alias()))->filter()->unique()->values()->all();
             $output = $this->output($include->source, $include->fields);
+            $input = new Input($context, [], $this->ids($output));
             $filters = [...$include->filters, new Condition($foreignKey, Op::In, $parentKeys)];
             $select = $this->select($include->source, $output, $filters, $include->sort, [
                 $foreignKey,
@@ -152,7 +165,7 @@ final readonly class Executor
 
             $related = $parentKeys === []
                 ? new Collection
-                : $this->compiler->build($include->source, $select, $filters, $include->sort, [], [], $context)->get();
+                : $this->compiler->build($include->source, $select, $filters, $include->sort, [], [], $input)->get();
 
             $grouped = $related->groupBy(fn (Model $model): string => Raw::string($model->getAttribute($foreignKey->alias())));
 
@@ -160,7 +173,7 @@ final readonly class Executor
                 $parent = Raw::string($model->getAttribute($localKey->alias()));
                 /** @var Collection<int, Model> $children */
                 $children = ($grouped[$parent] ?? new Collection)->take($include->limit)->values();
-                $childRows = $this->formatAll($children, $output, $include->source, []);
+                $childRows = $this->formatAll($children, $output, $include->source, [], $input);
                 $this->attachIncludes($childRows, $children, $include->source, $include->include, $context);
                 $rows[$i][$include->name] = $childRows;
             }

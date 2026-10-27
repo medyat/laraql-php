@@ -422,6 +422,17 @@
             "type": "string"
           },
           "uniqueItems": true
+        },
+        "params": {
+          "type": "object",
+          "description": "Laraql extension: named inputs the source declares, one scalar per name; they shape a column or a join rather than narrow rows.",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
+          }
         }
       }
     },

@@ -11,12 +11,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use LogicException;
 use Medyat\Laraql\Column\Column;
+use Medyat\Laraql\Input;
 
 /**
  * A queryable source: an Eloquent model plus the whitelist of typed columns
  * clients may read, filter, sort and search. Application concerns (tenant
- * scopes, ability flags, photos) enter through `scope()`, `decorators()` and
- * `options()`, never through the core.
+ * scopes, ability flags, photos) enter through `scope()`, `decorators()`,
+ * `options()` and `params()`, never through the core. Hooks see the request
+ * through an Input: the user, the validated params, the requested fields.
  */
 abstract class Source
 {
@@ -32,7 +34,7 @@ abstract class Source
     /** @return list<Column> */
     abstract public function columns(): array;
 
-    /** One or two sentences for the glossary: what a row is and when to query this source. */
+    /** One or two sentences for clients and agents: what a row is and when to query this source. */
     public function describe(): ?string
     {
         return null;
@@ -51,14 +53,26 @@ abstract class Source
     }
 
     /**
+     * Named inputs clients may send in `params`, typed like columns so the
+     * validator checks them and clients can describe them. For values that shape
+     * a join or a column (a balance date), not for narrowing rows.
+     *
+     * @return array<string, Column>
+     */
+    public function params(): array
+    {
+        return [];
+    }
+
+    /**
      * Joins columns may read through, keyed by the table alias used in `from()`:
      * `['companies' => ['companies.id', '=', 'orders.company_id']]` or a closure
-     * receiving the sub-query. Applied only when a selected, filtered, sorted or
-     * searched column needs them.
+     * receiving the sub-query (and free to capture `$input`). Applied only when
+     * a selected, filtered, sorted or searched column needs them.
      *
      * @return array<string, array{string, string, string}|Closure(Builder<Model>): void>
      */
-    public function joins(): array
+    public function joins(Input $input): array
     {
         return [];
     }
@@ -68,12 +82,12 @@ abstract class Source
      *
      * @param  Builder<Model>  $query
      */
-    public function scope(Builder $query): void {}
+    public function scope(Builder $query, Input $input): void {}
 
     /**
      * Add keys to every row (ability flags, computed fields).
      *
-     * @return list<Closure(Model, array<string, mixed>): array<string, mixed>>
+     * @return list<Closure(Model, array<string, mixed>, Input): array<string, mixed>>
      */
     public function decorators(): array
     {

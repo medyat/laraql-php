@@ -7,11 +7,12 @@ namespace Medyat\Laraql\Source;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Medyat\Laraql\Input;
 
 /**
  * A named, server-side behaviour a source declares; clients send its name in
  * `options`. Three kinds: narrow the row set, eager-load a relation, add keys
- * to each row.
+ * to each row. Closures receive the query Input after their usual arguments.
  */
 final readonly class Option
 {
@@ -22,8 +23,8 @@ final readonly class Option
     public const string DECORATE = 'decorate';
 
     /**
-     * @param  Closure(Builder<Model>): void|null  $scope
-     * @param  Closure(Model, array<string, mixed>): array<string, mixed>|null  $decorator
+     * @param  Closure(Builder<Model>, Input): void|null  $scope
+     * @param  Closure(Model, array<string, mixed>, Input): array<string, mixed>|null  $decorator
      */
     private function __construct(
         public string $kind,
@@ -33,7 +34,7 @@ final readonly class Option
         public ?Closure $decorator = null,
     ) {}
 
-    /** @param  Closure(Builder<Model>): void  $scope */
+    /** @param  Closure(Builder<Model>, Input): void  $scope */
     public static function scope(Closure $scope, ?string $description = null): self
     {
         return new self(self::SCOPE, $description, scope: $scope);
@@ -44,7 +45,7 @@ final readonly class Option
         return new self(self::LOAD, $description, relation: $relation);
     }
 
-    /** @param  Closure(Model, array<string, mixed>): array<string, mixed>  $decorator */
+    /** @param  Closure(Model, array<string, mixed>, Input): array<string, mixed>  $decorator */
     public static function decorate(Closure $decorator, ?string $description = null): self
     {
         return new self(self::DECORATE, $description, decorator: $decorator);

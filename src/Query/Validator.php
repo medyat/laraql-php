@@ -20,7 +20,7 @@ use Medyat\Laraql\Source\Source;
  */
 final class Validator
 {
-    private const array QUERY_KEYS = ['source', 'kind', 'fields', 'filters', 'sort', 'page', 'search', 'include', 'options'];
+    private const array QUERY_KEYS = ['source', 'kind', 'fields', 'filters', 'sort', 'page', 'search', 'include', 'options', 'params'];
 
     private const array INCLUDE_KEYS = ['fields', 'filters', 'sort', 'limit', 'include'];
 
@@ -56,6 +56,7 @@ final class Validator
             searchTokens: $this->search($raw['search'] ?? null, $source, $errors),
             include: $this->include($raw['include'] ?? [], $source, 'include', 1, $errors),
             options: $this->options($raw['options'] ?? [], $source, 'options', $errors),
+            params: $this->params($raw['params'] ?? [], $source, 'params', $errors),
         );
 
         $errors->throwIfAny();
@@ -466,6 +467,45 @@ final class Validator
         }
 
         return array_values(array_unique($options));
+    }
+
+    /**
+     * Named inputs: every name must be declared by the source and the value
+     * must fit the declared type the way an `eq` value would.
+     *
+     * @return array<string, mixed>
+     */
+    private function params(mixed $raw, Source $source, string $path, Errors $errors): array
+    {
+        if (! is_array($raw) || ($raw !== [] && array_is_list($raw))) {
+            $errors->add($path, 'invalid_value', ['field' => $path]);
+
+            return [];
+        }
+
+        $declared = $source->params();
+        $params = [];
+
+        foreach ($raw as $name => $value) {
+            $name = (string) $name;
+            $param = $declared[$name] ?? null;
+
+            if ($param === null) {
+                $errors->add("{$path}.{$name}", 'unknown_param', ['param' => $name, 'source' => $source->name()]);
+
+                continue;
+            }
+
+            if (! $this->valueFits(Op::Eq, $param, $value)) {
+                $errors->add("{$path}.{$name}", 'invalid_value', ['field' => "{$path}.{$name}"]);
+
+                continue;
+            }
+
+            $params[$name] = $param->type === Type::User ? $this->resolveMe($value, "{$path}.{$name}", $errors) : $value;
+        }
+
+        return $params;
     }
 
     private function limit(string $key): int

@@ -18,6 +18,7 @@ final readonly class Query
      * @param  list<string>  $searchTokens
      * @param  array<string, IncludeQuery>  $include
      * @param  list<string>  $options
+     * @param  array<string, mixed>  $params  Validated values keyed by the declared param names
      */
     public function __construct(
         public Source $source,
@@ -29,5 +30,6 @@ final readonly class Query
         public array $searchTokens,
         public array $include,
         public array $options,
+        public array $params,
     ) {}
 }

@@ -33,13 +33,14 @@ only when it is malformed (`422`) or the request is unauthenticated (`401`).
 |---|---|---|---|
 | `source` | string | required | Source key, e.g. `order` |
 | `kind` | `"rows"` \| `"count"` | `rows` | `count` ignores `fields`, `sort`, `page`, `include` |
-| `fields` | string[] | all readable columns | Column ids; key, fixed and filter/sort columns are always added |
+| `fields` | string[] | all readable columns | Column ids; the key is always returned. Filter/sort columns and columns marked `always()` are read for the query but not returned unless listed |
 | `filters` | Filter[] | `[]` | Combined with AND; at most `limits.filters` |
 | `sort` | Sort[] | `[]` | At most `limits.sort`; the primary key is always appended as tie-breaker |
 | `page` | `{ number, size }` | `{ 1, limits.page_size.default }` | 1-based; `size ≤ limits.page_size.max` |
 | `search` | string | — | Free text over the source's searchable columns |
 | `include` | map | — | Laraql extension, see below |
 | `options` | string[] | `[]` | Laraql extension: named hooks declared by the source |
+| `params` | object | `{}` | Laraql extension: named, typed inputs declared by the source, `{ "name": value }`; see below |
 
 ### Filter
 
@@ -132,7 +133,7 @@ Named, server-side behaviours a source declares; the client only sends names:
 ```
 
 A source lists its options in `options(): array`; each entry is one of three
-kinds, so the glossary can say what it does:
+kinds, so a client can say what it does:
 
 | Kind | Effect | Example |
 |---|---|---|
@@ -141,7 +142,27 @@ kinds, so the glossary can say what it does:
 | `Option::decorate(fn)` | adds computed keys to each row | `allowed_units` → `{ "allowed_units": [...] }` |
 
 Unknown names are `422` (`options.N`). Options are the replacement for ad-hoc
-"function" names: they are part of the contract and show up in the glossary.
+"function" names: they are part of the contract and carry a description.
+
+## Parameters (Laraql extension)
+
+Inputs that are not filters: they change how the source builds a column or a
+join (a balance as of a date, a unit to convert to) rather than which rows
+match.
+
+```json
+{ "source": "company", "fields": ["code", "balance"], "params": { "balance_as_of": "2026-09-30" } }
+```
+
+- A source declares them in `params(): array` as typed columns
+  (`'balance_as_of' => Column::date('balance_as_of')`), with a `describe()` like
+  any column.
+- One scalar per name, validated like an `eq` value of that type; `"@me"`
+  resolves on `user` params. Unknown names and unfit values are `422` under
+  `params.<name>`.
+- Hooks (`scope`, `joins`, decorators, option closures) read them from
+  `Input::$params`, next to the user and the requested field ids.
+- They apply to `kind: count` too; includes carry no params.
 
 ## Errors
 

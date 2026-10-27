@@ -8,7 +8,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 /** Per-request facts every query in a batch shares. */
-final readonly class Context
+readonly class Context
 {
     public function __construct(
         public string $timezone,

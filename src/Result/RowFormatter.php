@@ -10,6 +10,7 @@ use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 use Medyat\Laraql\Column\Column;
 use Medyat\Laraql\Column\Type;
+use Medyat\Laraql\Input;
 use Medyat\Laraql\Support\Raw;
 
 /**
@@ -21,10 +22,10 @@ final class RowFormatter
 {
     /**
      * @param  list<Column>  $columns  Output columns, key first.
-     * @param  list<Closure(Model, array<string, mixed>): array<string, mixed>>  $decorators
+     * @param  list<Closure(Model, array<string, mixed>, Input): array<string, mixed>>  $decorators
      * @return array<string, mixed>
      */
-    public function format(Model $model, array $columns, array $decorators): array
+    public function format(Model $model, array $columns, array $decorators, Input $input): array
     {
         /** @var array<string, mixed> $row */
         $row = [];
@@ -34,7 +35,7 @@ final class RowFormatter
         }
 
         foreach ($decorators as $decorator) {
-            $row = $decorator($model, $row);
+            $row = $decorator($model, $row, $input);
         }
 
         return $row;

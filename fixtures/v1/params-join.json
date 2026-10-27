@@ -1,0 +1,100 @@
+{
+  "name": "params-join",
+  "description": "A declared parameter shapes a join: lines_qty is the total quantity on the order, or only the given product's quantity when params.product_code is sent. Parameters apply to count queries too.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "one_product": {
+        "source": "order",
+        "fields": [
+          "code",
+          "lines_qty"
+        ],
+        "params": {
+          "product_code": "HC-80"
+        },
+        "filters": [
+          {
+            "column": "lines_qty",
+            "op": "gte",
+            "value": 1
+          }
+        ]
+      },
+      "all_products": {
+        "source": "order",
+        "fields": [
+          "code",
+          "lines_qty"
+        ],
+        "filters": [
+          {
+            "column": "code",
+            "op": "eq",
+            "value": "SO-1001"
+          }
+        ]
+      },
+      "how_many": {
+        "source": "order",
+        "kind": "count",
+        "params": {
+          "product_code": "HC-80"
+        },
+        "filters": [
+          {
+            "column": "lines_qty",
+            "op": "gte",
+            "value": 1
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "one_product": {
+          "rows": [
+            {
+              "id": 1,
+              "code": "SO-1001",
+              "lines_qty": 2
+            },
+            {
+              "id": 4,
+              "code": "SO-1004",
+              "lines_qty": 1
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        },
+        "all_products": {
+          "rows": [
+            {
+              "id": 1,
+              "code": "SO-1001",
+              "lines_qty": 13
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        },
+        "how_many": {
+          "total": 2
+        }
+      }
+    }
+  }
+}

@@ -66,19 +66,4 @@ return [
 
     'sources' => [],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Glossary
-    |--------------------------------------------------------------------------
-    |
-    | `php artisan laraql:glossary` renders protocol.md and one <source>.md per
-    | registered source here (default resources/laraql/glossary). Point your
-    | MCP resources at these files; `--check` fails when they are stale.
-    |
-    */
-
-    'glossary' => [
-        'path' => null,
-    ],
-
 ];

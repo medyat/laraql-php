@@ -70,7 +70,7 @@ final class OrderSource extends Source
         ];
     }
 
-    public function joins(): array
+    public function joins(Input $input): array
     {
         return ['companies' => ['companies.id', '=', 'orders.company_id']];
     }
@@ -99,16 +99,21 @@ multiply parent rows; use `relations()` + `include` for those). The key is the
 joined table's name; to alias a table or join it twice, use the closure form:
 `'c' => fn ($q) => $q->leftJoin('companies as c', 'c.id', '=', 'orders.company_id')`.
 
+Hooks (`scope`, `joins`, decorators, option closures) receive an `Input`: the
+user, the requested field ids and the validated `params`. Declare params in
+`params()` as typed columns (`['balance_as_of' => Column::date('balance_as_of')]`)
+for inputs that shape a join or a column, such as a balance date; narrowing
+rows is what filters are for.
+
+A column a decorator reads but the client may leave out of `fields` (an
+ability flag computed from `status`) is marked `->always()`: it is selected
+for every rows query and returned only when requested.
+
 Laraql runs on SQLite, MySQL and PostgreSQL (CI replays every fixture on all
 three) and supports integer and string/UUID primary keys.
 
 The full contract is in [`docs/protocol.md`](docs/protocol.md); `fixtures/v1`
 holds request/response pairs you can test a client against.
-
-For AI agents, `php artisan laraql:glossary` renders `protocol.md` and one
-page per source from the definitions above (point your MCP resources at
-them); `--check` fails in CI when they are stale.
-
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.

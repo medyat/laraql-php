@@ -6,10 +6,12 @@ namespace Workbench\App\Laraql;
 
 use Illuminate\Database\Eloquent\Builder;
 use Medyat\Laraql\Column\Column;
+use Medyat\Laraql\Input;
 use Medyat\Laraql\Source\Option;
 use Medyat\Laraql\Source\Relation;
 use Medyat\Laraql\Source\Source;
 use Workbench\App\Models\Order;
+use Workbench\App\Models\OrderLine;
 
 /** Mirrors fixtures/v1/dataset.json · sources.order */
 final class OrderSource extends Source
@@ -35,7 +37,7 @@ final class OrderSource extends Source
             Column::int('id'),
             Column::id('code')->searchable()->describe('Order number (SO-…), unique.'),
             Column::string('customer')->searchable()->describe('Customer name as printed on the order.'),
-            Column::select('status', ['draft', 'released', 'done'])->describe('Lifecycle state.'),
+            Column::select('status', ['draft', 'released', 'done'])->always()->describe('Lifecycle state.'), // with_ability reads it
             Column::money('gross_total', 'TRY')->describe('Total including VAT.'),
             Column::date('due_date')->describe('Promised delivery date; empty when not agreed yet.'),
             Column::datetime('created_at'),
@@ -46,7 +48,26 @@ final class OrderSource extends Source
                 ->expression('(select count(*) from order_lines where order_lines.order_id = orders.id)')
                 ->notFilterable()
                 ->describe('Number of lines on the order.'),
+            Column::int('lines_qty')
+                ->from('line_totals.qty')
+                ->describe('Total quantity on the order; with params.product_code, only that product\'s quantity. Empty when no line matches.'),
         ];
+    }
+
+    public function params(): array
+    {
+        return ['product_code' => Column::id('product_code')->describe('Narrow lines_qty to one product code.')];
+    }
+
+    public function joins(Input $input): array
+    {
+        $code = $input->params['product_code'] ?? null;
+        $totals = OrderLine::query()
+            ->selectRaw('order_id, sum(qty) as qty')
+            ->when($code !== null, fn (Builder $query) => $query->where('product_code', $code))
+            ->groupBy('order_id');
+
+        return ['line_totals' => fn (Builder $query) => $query->leftJoinSub($totals, 'line_totals', 'line_totals.order_id', '=', 'orders.id')];
     }
 
     public function relations(): array

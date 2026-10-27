@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 use Medyat\Laraql\Column\Column;
-use Medyat\Laraql\Context;
+use Medyat\Laraql\Input;
 use Medyat\Laraql\Query\Condition;
 use Medyat\Laraql\Query\Sort;
 use Medyat\Laraql\Source\Option;
@@ -36,25 +36,25 @@ final readonly class QueryCompiler
      * @param  list<string>  $options
      * @return Builder<Model>
      */
-    public function build(Source $source, array $select, array $conditions, array $sort, array $searchTokens, array $options, Context $context): Builder
+    public function build(Source $source, array $select, array $conditions, array $sort, array $searchTokens, array $options, Input $input): Builder
     {
         $table = $source->table();
         $inner = $source->newModel()->newQuery();
-        $source->scope($inner);
+        $source->scope($inner, $input);
 
         foreach ($options as $name) {
             $option = $source->options()[$name];
 
             if ($option->kind === Option::SCOPE && $option->scope !== null) {
-                ($option->scope)($inner);
+                ($option->scope)($inner, $input);
             }
         }
 
         $searchable = $searchTokens === [] ? [] : $source->searchableColumns();
-        $this->applyJoins($inner, $source, [...$select, ...array_map(fn (Condition $c): Column => $c->column, $conditions), ...$searchable]);
+        $this->applyJoins($inner, $source, [...$select, ...array_map(fn (Condition $c): Column => $c->column, $conditions), ...$searchable], $input);
         $inner->select(array_map(fn (Column $column) => $this->selectExpression($column, $table), $select));
 
-        $dates = new DateRange($context);
+        $dates = new DateRange($input);
         $deferred = [];
 
         foreach ($conditions as $condition) {
@@ -98,9 +98,9 @@ final readonly class QueryCompiler
      * @param  Builder<Model>  $inner
      * @param  list<Column>  $columns
      */
-    private function applyJoins(Builder $inner, Source $source, array $columns): void
+    private function applyJoins(Builder $inner, Source $source, array $columns, Input $input): void
     {
-        $joins = $source->joins();
+        $joins = $source->joins($input);
         $applied = [];
 
         foreach ($columns as $column) {

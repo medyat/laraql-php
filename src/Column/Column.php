@@ -26,12 +26,15 @@ final class Column
 
     public private(set) bool $searchable = false;
 
+    /** Read on every rows query even when `fields` leaves it out; returned only when requested. */
+    public private(set) bool $always = false;
+
     public private(set) ?string $currency = null;
 
     /** @var list<string|int>|null */
     public private(set) ?array $options = null;
 
-    /** Human text for the glossary (what the column means, units, caveats). */
+    /** Human text for clients and agents (what the column means, units, caveats). */
     public private(set) ?string $description = null;
 
     private function __construct(public readonly string $id, public readonly Type $type)
@@ -192,6 +195,14 @@ final class Column
     public function describe(string $description): self
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    /** Select on every rows query so decorators and load options can rely on it, whatever `fields` says. */
+    public function always(): self
+    {
+        $this->always = true;
 
         return $this;
     }
