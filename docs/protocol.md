@@ -63,9 +63,29 @@ combinations the type does not support with `422`.
 | `within` | `{ "preset": … }` or `{ "from", "to" }` | date, datetime | Inclusive. Presets: `today`, `this_week`, `next_7_days`, `this_month`, `last_30_days`, `this_quarter`, `overdue` |
 | `is_empty` / `is_not_empty` | — | all | `NULL`; for text types also `''`; for lists also `[]` |
 
-Presets are resolved on the server in the request timezone so that saved
-filters stay relative. **Open:** the timezone currently travels as the
-`X-Timezone` header; a query-level field may replace it.
+Presets and day ranges are resolved on the server in the **request
+timezone**, so saved filters stay relative. The timezone travels as the
+`X-Timezone` header (name configurable, `laraql.timezone.header`); without it
+the application's `app.timezone` applies. An unknown zone name is an
+envelope-level `422 invalid_request` (`details.timezone`). All queries in a
+batch share the same timezone.
+
+### Search
+
+`search` is free text over the columns the source declares `searchable()`
+(text types only; the client cannot pick columns). The text is split on
+whitespace into tokens; **every token must match at least one searchable
+column** (tokens AND, columns OR), order does not matter, matching is a
+case-insensitive substring with `%` and `_` escaped:
+
+```sql
+WHERE (code ILIKE '%ege%'  OR customer ILIKE '%ege%')
+  AND (code ILIKE '%1004%' OR customer ILIKE '%1004%')
+```
+
+Blank search is ignored. More than `limits.search_tokens` tokens is `422`
+(`details.search`). A source without searchable columns rejects `search` with
+`422`. `search` and `filters` combine with AND.
 
 ### Sort
 
@@ -101,8 +121,22 @@ A client that never asks for `kind: count` never pays for a count.
 
 ## Options (Laraql extension)
 
-Named hooks a source declares (`eager-load the photo`, `only orderable
-products`). Unknown names are `422`. Options are the replacement for ad-hoc
+Named, server-side behaviours a source declares; the client only sends names:
+
+```json
+{ "source": "product", "options": ["only_orderable", "with_photo"] }
+```
+
+A source lists its options in `options(): array`; each entry is one of three
+kinds, so the glossary can say what it does:
+
+| Kind | Effect | Example |
+|---|---|---|
+| `Option::scope(fn)` | narrows the row set in the sub-query | `only_orderable` → `where('type', …)` |
+| `Option::load(relation)` | eager-loads a relation for the page of rows | `with_photo` |
+| `Option::decorate(fn)` | adds computed keys to each row | `allowed_units` → `{ "allowed_units": [...] }` |
+
+Unknown names are `422` (`options.N`). Options are the replacement for ad-hoc
 "function" names: they are part of the contract and show up in the glossary.
 
 ## Errors
@@ -145,9 +179,7 @@ See `config/laraql.php`: page size 50 / max 500, 20 filters, 500 values per
 `in`, 3 sort keys, include limit 100 / max 500 / depth 2, 20 queries per
 request.
 
-## Open questions
+## Reserved
 
-- Timezone: header vs. query field.
-- Search semantics: every whitespace-separated token must appear in at least
-  one searchable column (tokens AND, columns OR) is the proposed rule.
-- Keyset (cursor) pagination: not in v1; the name `cursor` is reserved.
+- `page.cursor`: keyset pagination is not part of v1. The name is reserved so
+  it can be added in a minor version next to `page.number`; offset paging stays.

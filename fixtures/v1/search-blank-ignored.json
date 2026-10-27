@@ -1,0 +1,47 @@
+{
+  "name": "search-blank-ignored",
+  "description": "Whitespace-only search is ignored.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "fields": [
+          "code"
+        ],
+        "search": "   ",
+        "page": {
+          "number": 1,
+          "size": 2
+        }
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 1,
+              "code": "SO-1001"
+            },
+            {
+              "id": 2,
+              "code": "SO-1002"
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 2,
+            "hasMore": true
+          }
+        }
+      }
+    }
+  }
+}

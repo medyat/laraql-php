@@ -1,0 +1,41 @@
+{
+  "name": "search-two-tokens-across-columns",
+  "description": "Tokens are ANDed and may match different searchable columns: 'ege' in customer, '1004' in code.",
+  "context": {
+    "now": "2026-10-27T10:00:00+03:00",
+    "timezone": "Europe/Istanbul"
+  },
+  "request": {
+    "queries": {
+      "q": {
+        "source": "order",
+        "fields": [
+          "code",
+          "customer"
+        ],
+        "search": "ege 1004"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "results": {
+        "q": {
+          "rows": [
+            {
+              "id": 4,
+              "code": "SO-1004",
+              "customer": "Ege Tarim Makine"
+            }
+          ],
+          "page": {
+            "number": 1,
+            "size": 50,
+            "hasMore": false
+          }
+        }
+      }
+    }
+  }
+}

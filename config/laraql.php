@@ -22,6 +22,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Timezone
+    |--------------------------------------------------------------------------
+    |
+    | Date presets (today, this_week, …) and day ranges are resolved in the
+    | timezone sent by the client in this header; without it `app.timezone`
+    | applies. Unknown zone names are rejected with 422.
+    |
+    */
+
+    'timezone' => [
+        'header' => 'X-Timezone',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Limits
     |--------------------------------------------------------------------------
     |
@@ -34,6 +49,7 @@ return [
         'filters' => 20,
         'in_values' => 500,
         'sort' => 3,
+        'search_tokens' => 10,
         'include' => ['limit' => 100, 'max_limit' => 500, 'depth' => 2],
         'queries_per_request' => 20,
     ],
