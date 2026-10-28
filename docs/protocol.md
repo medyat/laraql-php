@@ -48,8 +48,8 @@ only when it is malformed (`422`) or the request is unauthenticated (`401`).
 { "column": "gross_total", "op": "between", "value": [100, 500] }
 ```
 
-Operators are the same 18 keys the `@swors/data-table` client emits. What an
-operator *means* depends on the column type; the validator rejects
+Operators are 18 keys shared with the table client this protocol was designed
+alongside. What an operator *means* depends on the column type; the validator rejects
 combinations the type does not support with `422`.
 
 | `op` | Value | Types | Semantics |

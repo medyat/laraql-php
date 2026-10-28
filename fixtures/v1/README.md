@@ -2,7 +2,7 @@
 
 Request/response pairs that pin the protocol described in `docs/protocol.md`.
 The package replays them against the workbench sources; client adapters
-(e.g. `@swors/data-table/laraql`) read the same files from
+(a data-table adapter, for example) read the same files from
 `vendor/medyat/laraql/fixtures/v1`.
 
 Every fixture is computed against `dataset.json` (two sources, 6 orders,
