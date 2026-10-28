@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/medyat/laraql/schema/laraql-v1.schema.json",
+  "$id": "https://github.com/medyat/laraql-php/schema/laraql-v1.schema.json",
   "title": "Laraql protocol v1",
   "description": "Request envelope (#/$defs/Request) and response envelope (#/$defs/Response). Limits (page size, filter count, …) are enforced by the server from config and are not part of the shape.",
   "oneOf": [
