@@ -23,7 +23,8 @@ it('replays the fixture', function (string $file): void {
     $fixture = json_decode((string) file_get_contents($file), true, 512, JSON_THROW_ON_ERROR);
 
     $this->seed(DatabaseSeeder::class);
-    Carbon::setTestNow(CarbonImmutable::parse($fixture['context']['now']));
+    // UTC on purpose: with a zoned test-now, older Carbon (3.8) casts DB datetimes in that zone instead of app.timezone.
+    Carbon::setTestNow(CarbonImmutable::parse($fixture['context']['now'])->utc());
 
     $dataset = json_decode((string) file_get_contents(__DIR__.'/../../fixtures/v1/dataset.json'), true, 512, JSON_THROW_ON_ERROR);
     $name = array_key_exists('user', $fixture['context']) ? $fixture['context']['user'] : 'admin';
